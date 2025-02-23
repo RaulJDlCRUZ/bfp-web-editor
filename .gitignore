@@ -128,3 +128,11 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Dev containers
+.devcontainer/
+
+# Template for the Bachelor’s Final Project (TFG) NOT INCLUDED IN ORDER TO SAVE STORAGE SPACE
+# [DOWNLOAD] wget https://www.felixalbertos.com/files/tfggii.zip && unzip -d ./tfggii tfggii.zip
+tfggii.zip
+tfggii/
