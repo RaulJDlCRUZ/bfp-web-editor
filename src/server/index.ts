@@ -13,6 +13,12 @@ const file = process.env.RESFILENAMEDEF || 'tfgii.pdf';
 
 app.use(cors());
 
+// Serve static files from a specific directory (Middleware)
+app.use('/result', express.static(path.join(__dirname, docdir)));
+
+// Servir archivos estáticos del frontend
+app.use(express.static(path.join(__dirname, "../public")));
+
 function compileDocument(res: Response) {
     const dir = process.env.MAKEPATH || 'makefiles';
     const proc = spawn('make', [], {
@@ -41,11 +47,13 @@ function compileDocument(res: Response) {
     });
 }
 
-// Serve static files from a specific directory (Middleware)
-app.use('/result', express.static(path.join(__dirname, docdir)));
-
 app.get("/", (_req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, '..', '/public/', 'index.html'));
+});
+
+// Manejar todas las rutas no definidas y servir index.html
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, '../', 'dist/', 'public/', 'index.html'));
 });
 
 app.get('/runcompilation', (req, res) => {
