@@ -1,18 +1,18 @@
-/* Adapted from Uiverse.io by krlozCJ */ 
+/* Adapted from Uiverse.io by krlozCJ */
 button {
-    border: none;
-    outline: none;
-    background-color: #58e451;
-    padding: 10px 20px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #fff;
-    border-radius: 5px;
-    transition: all ease 0.1s;
-    box-shadow: 0px 5px 0px 0px #b8fa9b;
-  }
-  
-  button:active {
-    transform: translateY(5px);
-    box-shadow: 0px 0px 0px 0px #b8fa9b;
-  }
+  border: none;
+  outline: none;
+  background-color: #58e451;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 5px;
+  transition: all ease 0.1s;
+  box-shadow: 0px 5px 0px 0px #b8fa9b;
+}
+
+button:active {
+  transform: translateY(5px);
+  box-shadow: 0px 0px 0px 0px #b8fa9b;
+}

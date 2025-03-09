@@ -20,7 +20,16 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Resolve Paths */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*",
+        "../../dist/*"
+      ]
+    }
   },
   "include": ["src"]
 }
