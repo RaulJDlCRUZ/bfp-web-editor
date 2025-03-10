@@ -4,7 +4,7 @@ button {
   outline: none;
   background-color: #58e451;
   padding: 10px 20px;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
   color: #fff;
   border-radius: 5px;
@@ -15,4 +15,8 @@ button {
 button:active {
   transform: translateY(5px);
   box-shadow: 0px 0px 0px 0px #b8fa9b;
+}
+
+button:hover {
+  background-color: #4cd13f;
 }
