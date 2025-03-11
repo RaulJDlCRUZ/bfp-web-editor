@@ -4,7 +4,7 @@ async function fetchDocument() {
   try {
     const response = await axiosInstance.get("/runcompilation");
     if (response.data && response.data.result === "Compiled successfully!") {
-      return response.data.pdf;
+      return response;
     }
   } catch (error) {
     console.error("Error fetching document:", error);

@@ -20,3 +20,48 @@ button:active {
 button:hover {
   background-color: #4cd13f;
 }
+
+button:disabled {
+  background-color: #b8fa9b;
+  box-shadow: 0px 5px 0px 0px #b8fa9b;
+}
+
+button:disabled:hover {
+  background-color: #b8fa9b;
+}
+
+button:disabled.loading {
+  position: relative;
+  color: transparent;
+}
+
+button:disabled.loading::after {
+  content: "Compiling...";
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+button:disabled.loading::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transform: translateY(-50%);
+}
+
+@keyframes spin {
+  0% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}

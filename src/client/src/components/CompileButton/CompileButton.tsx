@@ -12,15 +12,15 @@ const CompileButton: React.FC<CompileButtonProps> = ({ setDocumentData }) => {
 
   const handleClick = async () => {
     setIsLoading(true);
-    setButtonText("Obtaining...");
+    setButtonText("Compiling...");
     try {
       const response = await fetchDocument();
       if (!response) {
         setButtonText("Error");
         return;
       }
-      setDocumentData(response);
-      setButtonText("Document Obtained");
+      setDocumentData(response.data.pdf);
+      setButtonText("Re-compile");
     } catch (error) {
       setButtonText("Error");
     } finally {
@@ -30,7 +30,7 @@ const CompileButton: React.FC<CompileButtonProps> = ({ setDocumentData }) => {
 
   return (
     <button
-      className="compile-button"
+      className={`compile-button ${isLoading ? "loading" : ""}`}
       onClick={handleClick}
       disabled={isLoading}
     >
