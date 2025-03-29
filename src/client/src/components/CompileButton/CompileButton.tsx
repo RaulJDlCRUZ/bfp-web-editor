@@ -35,6 +35,7 @@ const CompileButton: React.FC<CompileButtonProps> = ({ setDocumentData }) => {
       disabled={isLoading}
     >
       {buttonText}
+      {isLoading && <span className="loading-spinner" />}
     </button>
   );
 };
