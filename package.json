@@ -1,11 +1,11 @@
 {
-  "name": "proyecto-fase-1",
-  "version": "1.0.0",
+  "name": "bfp-web-editor",
+  "version": "0.1.1",
   "main": "index.js",
   "keywords": [],
   "author": "Raúl Jiménez de la Cruz",
   "license": "ISC",
-  "description": "Fase 1 del proyecto BFP: Botón de compilación sencillo",
+  "description": "Fase 2 del proyecto BFP: Botón de compilación sencillo",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
