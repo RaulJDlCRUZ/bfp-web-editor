@@ -21,6 +21,11 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "get_template": "curl -X GET 'https://www.felixalbertos.com/files/tfggii.zip' -o tfggii.zip && unzip -d tfggii tfggii.zip && rm tfggii.zip",
+    "build": "npm run backend:build && npm run client:build",
+    "clean": "rm -rf dist",
+    "start": "npm run build && npm run backend:start",
+
     "backend:dev": "DEBUG=* PORT=5000 NODE_ENV=development node dist/index.js",
     "backend:nodemon": "nodemon src/index.ts",
     "backend:build": "npx tsc",
@@ -30,9 +35,6 @@
     "client:build": "cd src/client && npm run build",
     "client:preview": "cd src/client && npm run preview",
     
-    "clean": "rm -rf dist",
-    "build": "npm run backend:build && npm run client:build",
-    "start": "npm run build && npm run backend:start",
     "dev:all": "npm run backend:dev && npm run client:dev"
   }
 }
