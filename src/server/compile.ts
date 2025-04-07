@@ -20,7 +20,7 @@ export function compileDocument(res: Response) {
 
   proc.on("close", (code) => {
     console.log(`make process finished with code: ${code}`);
-    res.json({ result: "Compiled successfully!", pdf: "/servedoc" });
+    res.json({ result: "Compiled successfully!", pdf: "/api/result" });
   });
 
   proc.on("error", (error) => {

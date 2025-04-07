@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
 });
 
 // Get input files
-app.get("/files", (req, res) => {
+app.get("/api/files", (req, res) => {
   fs.readdir(folderPath, (err, files) => {
     if (err) {
       return res.status(500).json({ error: "Error al leer la carpeta" });
@@ -45,7 +45,7 @@ app.get("/files", (req, res) => {
 Endpoint designed to update files in the input directory. Expected to receive an object with the following structure:
 { deletions: string[], updates: { filename: string, content: string }[], additions: { filename: string, content: string }[] }
 */
-app.post("/files/update", (req, res) => {
+app.post("/api/files/update", (req, res) => {
   const { deletions, updates, additions } = req.body;
 
   // Deletions
@@ -79,13 +79,13 @@ app.post("/files/update", (req, res) => {
   res.json({ success: true });
 });
 
-app.get("/runcompilation", (req, res) => {
+app.get("/api/compile", (req, res) => {
   console.debug("Starting make process...");
   compileDocument(res);
 });
 
 // Specific route to serve the PDF file
-app.get("/servedoc", (req, res) => {
+app.get("/api/result", (req, res) => {
   res.sendFile(path.resolve(docdir) + "/" + file, (err) => {
     if (err) {
       console.error("Error while sending the file:", err);

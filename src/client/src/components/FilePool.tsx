@@ -9,14 +9,14 @@ interface FileItem {
 
 const FilePool: React.FC = () => {
   const [files, setFiles] = useState<FileItem[]>([]);
-  const [changedFiles, setChangedFiles] = useState<{
+  const [changedFiles] = useState<{
     deletions: string[];
     updates: { filename: string; content: string }[];
     additions: { filename: string; content: string }[];
   }>({ deletions: [], updates: [], additions: [] });
 
   useEffect(() => {
-    fetch("/files") // API Call
+    fetch("/api/files") // API Call
       .then((res) => res.json())
       .then((data) => {
         const filesList = data.files.map((f: string) => ({ name: f }));
@@ -38,7 +38,7 @@ const FilePool: React.FC = () => {
       </ul>
       <button
         onClick={() => {
-          fetch("/files/update", {
+          fetch("api/files/update", {
             // API Call
             method: "POST",
             headers: { "Content-Type": "application/json" },
