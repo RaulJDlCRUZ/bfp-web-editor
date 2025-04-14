@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import cors from "cors";
+import { Z_FIXED } from "zlib";
 
 dotenv.config({ override: true });
 
@@ -16,26 +17,29 @@ const file = process.env.RESFILENAMEDEF || "tfgii.pdf";
 app.use(cors());
 app.use(express.json());
 
+const clientPath = path.join(__dirname, "public/");
+const folderPath = path.join(path.dirname(__dirname), inputdir);
+const outputPath = path.join(path.dirname(__dirname), docdir);
+
 // Serve static files from the frontend
-app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.static(clientPath));
 
 // Serve input files from its directory
-const folderPath = path.join(__dirname, inputdir);
 app.use("/input", express.static(folderPath));
 
 // Serve result from a specific directory
-app.use("/result", express.static(path.join(__dirname, docdir)));
+app.use("/output", express.static(outputPath));
 
 // Define routes before static file serving middleware
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../", "dist/", "public/", "index.html"));
+  res.sendFile(path.join(clientPath, "index.html"));
 });
 
 // Get input files
 app.get("/api/files", (req, res) => {
   fs.readdir(folderPath, (err, files) => {
     if (err) {
-      return res.status(500).json({ error: "Error al leer la carpeta" });
+      return res.status(500).json({ error: "Error reading directory:\n", err });
     }
     res.json({ files });
   });
@@ -86,7 +90,7 @@ app.get("/api/compile", (req, res) => {
 
 // Specific route to serve the PDF file
 app.get("/api/result", (req, res) => {
-  res.sendFile(path.resolve(docdir) + "/" + file, (err) => {
+  res.sendFile(path.resolve(path.join(docdir, file)), (err) => {
     if (err) {
       console.error("Error while sending the file:", err);
       res.status(404).send("File not found");
@@ -95,5 +99,6 @@ app.get("/api/result", (req, res) => {
 });
 
 app.listen(port, () => {
+  // TODO: Remove unnecessary console logs and older PDF before starting
   console.log(`[server]: Server is running at http://localhost:${port}`);
 });

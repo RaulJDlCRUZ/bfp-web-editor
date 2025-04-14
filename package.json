@@ -5,7 +5,7 @@
   "keywords": [],
   "author": "Raúl Jiménez de la Cruz",
   "license": "ISC",
-  "description": "Fase 2 del proyecto BFP: Botón de compilación sencillo",
+  "description": "Fase 2 del proyecto BFP: Compilación y listado de ficheros de entrada",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
