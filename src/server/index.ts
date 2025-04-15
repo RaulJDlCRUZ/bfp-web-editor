@@ -1,10 +1,9 @@
 import express, { application, Express, Request, Response } from "express";
-import { compileDocument } from "./compile";
+import { readFilesRecursively, compileDocument } from "./utils";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import cors from "cors";
-import { Z_FIXED } from "zlib";
 
 dotenv.config({ override: true });
 
@@ -17,11 +16,12 @@ const file = process.env.RESFILENAMEDEF || "tfgii.pdf";
 app.use(cors());
 app.use(express.json());
 
-const clientPath = path.join(__dirname, "public/");
-const folderPath = path.join(path.dirname(__dirname), inputdir);
-const outputPath = path.join(path.dirname(__dirname), docdir);
+export const clientPath = path.join(__dirname, "public/");
+export const folderPath = path.join(path.dirname(__dirname), inputdir);
+export const outputPath = path.join(path.dirname(__dirname), docdir);
 
 // Serve static files from the frontend
+// MUST FIX: Avoid serving e.g. index.html if client is not in execution
 app.use(express.static(clientPath));
 
 // Serve input files from its directory
@@ -35,13 +35,46 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(clientPath, "index.html"));
 });
 
-// Get input files
+// Get input files (recursively)
 app.get("/api/files", (req, res) => {
-  fs.readdir(folderPath, (err, files) => {
-    if (err) {
-      return res.status(500).json({ error: "Error reading directory:\n", err });
-    }
+  try {
+    const files = readFilesRecursively(folderPath);
     res.json({ files });
+  } catch (err) {
+    res.status(500).json({ error: "Error reading directory:\n", err });
+  }
+});
+
+// Get a specific file
+app.get("/api/files/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(folderPath, filename);
+  
+  // Verificar que el archivo existe
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({ error: "File not found" });
+    }
+    
+    // Servir el archivo
+    res.download(filePath, filename, (err) => {
+      if (err) {
+        res.status(500).json({ error: "Error while downloading the file" });
+      }
+    });
+  });
+});
+
+// Remove a file
+app.delete("/api/files/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(folderPath, filename);
+  
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      return res.status(500).json({ error: "Error while removing the file" });
+    }
+    res.json({ success: true, message: `${filename} removed successfully` });
   });
 });
 
