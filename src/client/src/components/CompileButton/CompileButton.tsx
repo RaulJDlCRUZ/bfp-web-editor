@@ -1,10 +1,7 @@
 import React, { useState } from "react";
+import { CompileButtonProps } from "../../common/types";
 import fetchDocument from "../../services/fetchDocument";
 import "./CompileButton.css";
-
-interface CompileButtonProps {
-  setDocumentData: (data: string) => void;
-}
 
 const CompileButton: React.FC<CompileButtonProps> = ({ setDocumentData }) => {
   const [buttonText, setButtonText] = useState("Get Document");

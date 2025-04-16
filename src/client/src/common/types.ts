@@ -4,6 +4,20 @@ export interface File {
   selected?: boolean;
 }
 
+export interface FileItem {
+  name: string;
+  size: number;
+  type: string;
+  // TODO: Add more properties as needed, e.g., content** or edition flags
+}
+
+export interface FileListProps {
+  files: { name: string; selected?: boolean }[];
+  onDownload: (filename: string) => void;
+  onDelete: (filename: string) => void;
+  onSelect: (filename: string, selected: boolean) => void;
+}
+
 export interface FileOperation {
   operation: "delete" | "update" | "add";
   file: string;
@@ -29,4 +43,9 @@ export interface ApiResponse {
   };
   files?: string[];
   error?: string;
+}
+
+// This interface is used to define the structure of the response from the server when compiling the document
+export interface CompileButtonProps {
+  setDocumentData: (data: string) => void;
 }

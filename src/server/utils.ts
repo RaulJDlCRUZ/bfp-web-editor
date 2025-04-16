@@ -32,20 +32,20 @@ export function compileDocument(res: Response) {
   });
 }
 
-export const readFilesRecursively = (dir: string): string[] => {
-    let results: string[] = [];
-    const list = fs.readdirSync(dir);
-  
-    list.forEach((file) => {
-      const filePath = path.join(dir, file);
-      const stat = fs.statSync(filePath);
-  
-      if (stat && stat.isDirectory()) {
-        results = results.concat(readFilesRecursively(filePath));
-      } else {
-        results.push(path.relative(folderPath, filePath));
-      }
-    });
-  
-    return results;
-  };
+export function readFilesRecursively(dir: string): string[] {
+  let results: string[] = [];
+  const list = fs.readdirSync(dir);
+
+  list.forEach((file) => {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+
+    if (stat && stat.isDirectory()) {
+      results = results.concat(readFilesRecursively(filePath));
+    } else {
+      results.push(path.relative(folderPath, filePath));
+    }
+  });
+
+  return results;
+}

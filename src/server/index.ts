@@ -50,13 +50,12 @@ app.get("/api/files/:filename", (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(folderPath, filename);
   
-  // Verificar que el archivo existe
+  // If file is visible in the directory, we can serve it (check err first)
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
       return res.status(404).json({ error: "File not found" });
     }
     
-    // Servir el archivo
     res.download(filePath, filename, (err) => {
       if (err) {
         res.status(500).json({ error: "Error while downloading the file" });

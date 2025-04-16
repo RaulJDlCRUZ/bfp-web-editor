@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-
-interface FileItem {
-  name: string;
-  size: number;
-  type: string;
-  // TODO: Add more properties as needed, e.g., content** or edition flags
-}
+import { FileItem } from "@/common/types";
 
 const FilePool: React.FC = () => {
   const [files, setFiles] = useState<FileItem[]>([]);
