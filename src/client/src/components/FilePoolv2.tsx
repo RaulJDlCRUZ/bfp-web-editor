@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileListProps } from '@/common/types';
+import { FileListProps, fileIcons } from '@/common/types';
 
 const FileList: React.FC<FileListProps> = ({ files, onDownload, onDelete, onSelect }) => {
   if (files.length === 0) {
@@ -8,22 +8,7 @@ const FileList: React.FC<FileListProps> = ({ files, onDownload, onDelete, onSele
 
   const getFileIcon = (filename: string) => {
     const extension = filename.split('.').pop()?.toLowerCase();
-    
-    switch(extension) {
-      case 'pdf': return '📄';
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif': return '🖼️';
-      case 'doc':
-      case 'docx': return '📝';
-      case 'xls':
-      case 'xlsx': return '📊';
-      case 'txt': return '📃';
-      case 'zip':
-      case 'rar': return '🗜️';
-      default: return '📁';
-    }
+    return fileIcons[extension || ''] || '📁';
   };
 
   return (

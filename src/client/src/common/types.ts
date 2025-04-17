@@ -45,6 +45,26 @@ export interface ApiResponse {
   error?: string;
 }
 
+// This dictionary maps file extensions to their corresponding icons
+export const fileIcons: { [extension: string]: string } = {
+  pdf: '📄',
+  jpg: '🖼️',
+  jpeg: '🖼️',
+  png: '🖼️',
+  gif: '🖼️',
+  svg: '🖼️',
+  doc: '📝',
+  docx: '📝',
+  xls: '📊',
+  xlsx: '📊',
+  txt: '📃',
+  md: '📃',
+  zip: '🗜️',
+  rar: '🗜️',
+  bib: '📚',
+  json: '🗃️',
+};
+
 // This interface is used to define the structure of the response from the server when compiling the document
 export interface CompileButtonProps {
   setDocumentData: (data: string) => void;

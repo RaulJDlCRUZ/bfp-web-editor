@@ -1,6 +1,6 @@
 import { useState } from "react";
 import CompileButton from "@/components/CompileButton/CompileButton";
-import FilePool from "@/components/FilePoolv2";
+import SimpleFileList from "@/components/SimpleFilePool";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
 
@@ -16,6 +16,9 @@ const NextCompilePage: React.FC = () => {
         </p>
 
         {/* Put the file pool here */}
+        <div className="mt-8">
+          <SimpleFileList />
+        </div>
 
         <p className="text-gray-400 text-lg mt-4">
           Click the button below to compile the document
