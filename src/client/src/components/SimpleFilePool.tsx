@@ -3,6 +3,25 @@ import { fetchFiles, downloadFile } from "@/services/fileOperations";
 // import { File, FileItem } from '@/common/types';
 import { File } from '@/common/types';
 
+async function handleDownload(filename: string): Promise<void> {
+  try {
+    const blob = await downloadFile(filename);
+    // Crear un enlace temporal para descargar el archivo
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    alert(`Archivo ${filename} se descargará en breve`);
+  } catch (err) {
+    alert(`Error al descargar ${filename}`);
+    console.error(`Error al descargar ${filename}:`, err);
+  }
+}
+
 function SimpleFileList(): React.ReactElement {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +60,7 @@ function SimpleFileList(): React.ReactElement {
             <li key={`${index}_${file.name}`} className="flex justify-between">
               <span className="text-gray-700">{file.name}</span>
               {" "}
-              <button onClick={() => downloadFile(file.name)}>Descargar</button>
+              <button onClick={() => handleDownload(file.name)}>Descargar</button>
             </li>
           ))}
         </ul>
