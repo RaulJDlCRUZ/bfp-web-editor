@@ -2,7 +2,7 @@ import axiosInstance from "./axiosInstance";
 
 async function fetchDocument() {
   try {
-    const response = await axiosInstance.get("/api/compile");
+    const response = await axiosInstance.get("/compile");
     if (response.data && response.data.result === "Compiled successfully!") {
       return response;
     }

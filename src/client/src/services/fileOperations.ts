@@ -14,9 +14,21 @@ export async function fetchFiles(): Promise<File[]> {
       selected: false,
     }));
     return fileObjects;
-
   } catch (error) {
     console.error("Error al cargar archivos:", error);
+    throw error;
+  }
+}
+
+export async function createFile(filename: string): Promise<void> {
+  try {
+    const response = await axiosInstance.post(`/files/${filename}`);
+    if (!response.data || !response.data.success) {
+      throw new Error("Error al crear el archivo");
+    }
+    return response.data;
+  } catch (error) {
+    console.error(`Error al crear archivo ${filename}:`, error);
     throw error;
   }
 }
@@ -32,6 +44,15 @@ export async function downloadFile(filename: string): Promise<Blob> {
     return response.data;
   } catch (error) {
     console.error(`Error al descargar archivo ${filename}:`, error);
+    throw error;
+  }
+}
+
+export async function deleteFile(filename: string): Promise<void> {
+  try {
+    await axiosInstance.delete(`/files/${filename}`);
+  } catch (error) {
+    console.error(`Error al eliminar archivo ${filename}:`, error);
     throw error;
   }
 }

@@ -49,13 +49,13 @@ app.get("/api/files", (req, res) => {
 app.get("/api/files/:filename", (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(folderPath, filename);
-  
+
   // If file is visible in the directory, we can serve it (check err first)
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
       return res.status(404).json({ error: "File not found" });
     }
-    
+
     res.download(filePath, filename, (err) => {
       if (err) {
         res.status(500).json({ error: "Error while downloading the file" });
@@ -64,11 +64,31 @@ app.get("/api/files/:filename", (req, res) => {
   });
 });
 
+// Create a new file
+app.post("/api/files/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(folderPath, filename);
+
+  // Check if the file already exists
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (!err) {
+      return res.status(400).json({ error: "File already exists" });
+    }
+    // Create the file with empty content
+    fs.writeFile(filePath, "", (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Error while creating the file" });
+      }
+      res.json({ success: true, message: `${filename} created successfully` });
+    });
+  });
+});
+
 // Remove a file
 app.delete("/api/files/:filename", (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(folderPath, filename);
-  
+
   fs.unlink(filePath, (err) => {
     if (err) {
       return res.status(500).json({ error: "Error while removing the file" });
