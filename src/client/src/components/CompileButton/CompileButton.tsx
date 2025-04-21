@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { CompileButtonProps } from "@/common/types";
 import fetchDocument from "@/services/fetchDocument";
-import "./CompileButton.css";
+import styles from "./CompileButton.module.css";
 
 const CompileButton: React.FC<CompileButtonProps> = ({ setDocumentData }) => {
   const [buttonText, setButtonText] = useState("Get Document");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleClick = async () => {
+  async function handleClick() {
     setIsLoading(true);
     setButtonText("Compiling...");
     try {
@@ -23,16 +23,16 @@ const CompileButton: React.FC<CompileButtonProps> = ({ setDocumentData }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <button
-      className={`compile-button ${isLoading ? "loading" : ""}`}
+      className={styles.compileButton}
       onClick={handleClick}
       disabled={isLoading}
     >
       {buttonText}
-      {isLoading && <span className="loading-spinner" />}
+      {isLoading && <span className={styles.loadingSpinner}></span>}
     </button>
   );
 };

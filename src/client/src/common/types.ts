@@ -1,48 +1,26 @@
-// Define types of files and possible operations
-export interface File {
-  name: string;
-  selected?: boolean;
-}
-
 export interface FileItem {
   name: string;
+  selected?: boolean;
   size: number;
-  type: string;
+  filetype: string;
+  path: string;
+  nodetype: 'file';
   // TODO: Add more properties as needed, e.g., content** or edition flags
 }
 
-export interface FileListProps {
-  files: { name: string; selected?: boolean }[];
-  onDownload: (filename: string) => void;
-  onDelete: (filename: string) => void;
-  onSelect: (filename: string, selected: boolean) => void;
-}
+export interface DirectoryItem {
+  name: string;
+  nodetype: 'directory';
+  children?: TreeNode[];
+};
 
-export interface FileOperation {
-  operation: "delete" | "update" | "add";
-  file: string;
-  error?: string;
-}
+export type TreeNode = FileItem | DirectoryItem;
 
-export interface UpdateOperations {
-  deletions: string[];
-  updates: { filename: string; content: string }[];
-  additions: { filename: string; content: string }[];
-}
-
-export interface ApiResponse {
-  success: boolean;
-  operations?: {
-    total: number;
-    successful: number;
-    failed: number;
-  };
-  details?: {
-    success: FileOperation[];
-    errors: FileOperation[];
-  };
-  files?: string[];
-  error?: string;
+export interface ArboristNode {
+  id: string;
+  name: string;
+  children?: ArboristNode[];
+  data: TreeNode;
 }
 
 // This dictionary maps file extensions to their corresponding icons
@@ -68,4 +46,5 @@ export const fileIcons: { [extension: string]: string } = {
 // This interface is used to define the structure of the response from the server when compiling the document
 export interface CompileButtonProps {
   setDocumentData: (data: string) => void;
+  // setDocumentData: React.Dispatch<React.SetStateAction<string | null>>;
 }

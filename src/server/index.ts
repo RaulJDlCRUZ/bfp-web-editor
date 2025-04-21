@@ -1,9 +1,10 @@
 import express, { application, Express, Request, Response } from "express";
-import { readFilesRecursively, compileDocument } from "./utils";
+import { readFilesRecursivelyLegacy, getDirectoryTree, compileDocument } from "./utils";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import cors from "cors";
+import multer, { StorageEngine } from "multer";
 
 dotenv.config({ override: true });
 
@@ -15,10 +16,28 @@ const file = process.env.RESFILENAMEDEF || "tfgii.pdf";
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 export const clientPath = path.join(__dirname, "public/");
 export const folderPath = path.join(path.dirname(__dirname), inputdir);
 export const outputPath = path.join(path.dirname(__dirname), docdir);
+
+const storage: multer.StorageEngine = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, folderPath);
+  },
+  filename: function (req, file, cb) {
+    // Use the original name of the file
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB
+  },
+}).single("file");
 
 // Serve static files from the frontend
 // MUST FIX: Avoid serving e.g. index.html if client is not in execution
@@ -35,11 +54,37 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(clientPath, "index.html"));
 });
 
+// Middleware to handle file uploads
+app.post("/api/upload", (req, res) => {
+  upload(req, res, function (err) {
+    if (err) {
+      return res.status(500).json({ error: "Error uploading file" });
+    }
+    if (req.file) {
+      console.log(`${req.file.filename} uploaded successfully`);
+    } else {
+      console.log("No file uploaded");
+    }
+    // console.log("Request body:", req.body);
+    // File uploaded successfully
+    return res.json({ success: true, message: "File uploaded successfully" });
+  });
+});
+
 // Get input files (recursively)
 app.get("/api/files", (req, res) => {
   try {
-    const files = readFilesRecursively(folderPath);
+    const files = readFilesRecursivelyLegacy(folderPath);
     res.json({ files });
+  } catch (err) {
+    res.status(500).json({ error: "Error reading directory:\n", err });
+  }
+});
+
+// Endpoint para devolver la estructura
+app.get('/api/tree', (req, res) => {
+  try {
+    res.json(getDirectoryTree(folderPath));
   } catch (err) {
     res.status(500).json({ error: "Error reading directory:\n", err });
   }

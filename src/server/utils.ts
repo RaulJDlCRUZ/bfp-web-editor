@@ -32,7 +32,7 @@ export function compileDocument(res: Response) {
   });
 }
 
-export function readFilesRecursively(dir: string): string[] {
+export function readFilesRecursivelyLegacy(dir: string): string[] {
   let results: string[] = [];
   const list = fs.readdirSync(dir);
 
@@ -41,11 +41,36 @@ export function readFilesRecursively(dir: string): string[] {
     const stat = fs.statSync(filePath);
 
     if (stat && stat.isDirectory()) {
-      results = results.concat(readFilesRecursively(filePath));
+      results = results.concat(readFilesRecursivelyLegacy(filePath));
     } else {
       results.push(path.relative(folderPath, filePath));
     }
   });
 
   return results;
+}
+
+// Función recursiva para construir la jerarquía
+export function getDirectoryTree(dirPath: string): any {
+  const stats = fs.statSync(dirPath);
+  const name = path.basename(dirPath);
+
+  if (stats.isDirectory()) {
+    const children = fs.readdirSync(dirPath).map(child =>
+      getDirectoryTree(path.join(dirPath, child))
+    );
+    return {
+      name,
+      nodetype: 'directory',
+      children
+    };
+  } else {
+    return {
+      name,
+      nodetype: 'file',
+      size: stats.size,
+      filetype: path.extname(name).slice(1), // Remove the dot
+      path: path.relative(folderPath, dirPath)
+    };
+  }
 }

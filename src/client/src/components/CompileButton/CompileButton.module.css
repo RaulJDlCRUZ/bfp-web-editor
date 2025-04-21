@@ -1,5 +1,5 @@
 /* Adapted from Uiverse.io by krlozCJ */
-button {
+.compileButton {
   border: none;
   outline: none;
   background-color: #58e451;
@@ -12,30 +12,30 @@ button {
   box-shadow: 0px 5px 0px 0px #b8fa9b;
 }
 
-button:active {
+.compileButton:active {
   transform: translateY(5px);
   box-shadow: 0px 0px 0px 0px #b8fa9b;
 }
 
-button:hover {
+.compileButton:hover {
   background-color: #4cd13f;
 }
 
-button:disabled {
+.compileButton:disabled {
   background-color: #b8fa9b;
   box-shadow: 0px 5px 0px 0px #b8fa9b;
 }
 
-button:disabled:hover {
+.compileButton:disabled:hover {
   background-color: #b8fa9b;
 }
 
-button:disabled.loading {
+.compileButton:disabled.loading {
   position: relative;
   color: transparent;
 }
 
-button:disabled.loading::after {
+.compileButton:disabled.loading::after {
   content: "Compiling...";
   color: #fff;
   position: absolute;
@@ -43,7 +43,7 @@ button:disabled.loading::after {
   transform: translateX(-20%);
 }
 
-.loading-spinner {
+.loadingSpinner {
   display: inline-block;
   margin-left: 8px;
   width: 16px;

@@ -5,8 +5,8 @@ import {
   downloadFile,
   deleteFile,
 } from "@/services/fileOperations";
-// import { File, FileItem } from '@/common/types';
-import { File } from "@/common/types";
+import { FileItem } from "@/common/types";
+import FileUploader from "./FileUploader";
 
 function checkFileName(filename: string): string {
   // Validar el nombre del archivo
@@ -41,13 +41,23 @@ async function handleDownload(filename: string): Promise<void> {
 }
 
 function SimpleFileList(): React.ReactElement {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function handleCreate(filename: string): Promise<void> {
     try {
       await createFile(filename);
-      setFiles([...files, { name: filename, selected: false }]);
+      setFiles([
+        ...files,
+        {
+          name: filename,
+          selected: false,
+          size: 0,
+          filetype: "",
+          path: "",
+          nodetype: "file",
+        },
+      ]);
       alert(`Archivo ${filename} creado con éxito`);
     } catch (err) {
       alert(`Error al crear ${filename}`);
@@ -69,7 +79,7 @@ function SimpleFileList(): React.ReactElement {
   async function loadFiles() {
     try {
       setLoading(true);
-      const fileList: File[] = await fetchFiles();
+      const fileList: FileItem[] = await fetchFiles();
       console.log(fileList);
       setFiles(fileList); // Extract file names as strings
     } catch (error) {
@@ -112,6 +122,10 @@ function SimpleFileList(): React.ReactElement {
 
       <p className="text-gray-500 text-xl mt-4">Acciones</p>
 
+      <div className="mt-6">
+        <FileUploader />
+      </div>
+
       <div className="flex justify-between mt-4">
         <input
           type="text"
@@ -131,11 +145,11 @@ function SimpleFileList(): React.ReactElement {
         </button>
       </div>
 
+      {/*
       <button onClick={() => handleCreate("ficheroprueba.md")}>
         Crear fichero de prueba
       </button>
-
-      {/* Subir fichero */}
+      */}
     </div>
   );
 }

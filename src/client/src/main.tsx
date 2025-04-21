@@ -12,8 +12,8 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <App>
         <Routes>
-          <Route path="/" element={<BasicCompilePage />} />
-          <Route path="/v2" element={<CompilePagev2 />} />
+          <Route path="/" element={<CompilePagev2 />} />
+          <Route path="/legacy" element={<BasicCompilePage />} />
         </Routes>
       </App>
     </BrowserRouter>

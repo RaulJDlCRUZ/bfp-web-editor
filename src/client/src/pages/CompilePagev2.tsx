@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CompileButton from "@/components/CompileButton/CompileButton";
 import SimpleFileList from "@/components/SimpleFilePool";
+import FileTree from "@/components/TreeFilePool";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
 
@@ -18,6 +19,10 @@ const NextCompilePage: React.FC = () => {
         {/* Put the file pool here */}
         <div className="mt-8">
           <SimpleFileList />
+        </div>
+
+        <div className="mt-8">
+          <FileTree />
         </div>
 
         <p className="text-gray-400 text-lg mt-4">
