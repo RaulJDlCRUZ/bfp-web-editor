@@ -4,22 +4,10 @@ import {
   createFile,
   downloadFile,
   deleteFile,
+  checkFileName,
 } from "@/services/fileOperations";
 import { FileItem } from "@/common/types";
 import FileUploader from "./FileUploader";
-
-function checkFileName(filename: string): string {
-  // Validar el nombre del archivo
-  const regex = /^[a-zA-Z0-9_\-\.]+$/;
-  if (!regex.test(filename)) {
-    throw new Error("Nombre de archivo no válido");
-  }
-  // Comprobar si tiene extensión, si no, establecer .md por defecto
-  if (!filename.includes(".")) {
-    filename += ".md";
-  }
-  return filename;
-}
 
 async function handleDownload(filename: string): Promise<void> {
   try {

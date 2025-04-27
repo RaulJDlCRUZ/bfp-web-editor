@@ -1,24 +1,25 @@
 import { useState } from "react";
 import CompileButton from "@/components/CompileButton/CompileButton";
-import TreeComponent from "@/components/TreeFilePool";
+import SimpleFileList from "@/components/SimpleFilePool";
+// import FileTree from "@/components/TreeFilePool";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
 
-const NextCompilePage: React.FC = () => {
+const NextCompilePage2: React.FC = () => {
   const [documentData, setDocumentData] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col items-center justify-start pt-10">
-      <div className="text-left self-start w-1/3">
-        <div className="text-center">
-          <p className="text-gray-500 text-xl mt-4">File Listing</p>
-        </div>
-        <div className="mt-8 h-2/8">
-          <TreeComponent />
-        </div>
-      </div>
-
       <div className="text-center">
+        <h1 className="text-6xl text-gray-700 font-bold">TFG Web Editor</h1>
+        <p className="text-gray-500 text-2xl mt-4">
+          A simple web compiler for TFG documents
+        </p>
+
+        <div className="mt-8">
+          <SimpleFileList />
+        </div>
+
         <p className="text-gray-400 text-lg mt-4">
           Click the button below to compile the document
         </p>
@@ -48,4 +49,4 @@ const NextCompilePage: React.FC = () => {
   );
 };
 
-export default NextCompilePage;
+export default NextCompilePage2;

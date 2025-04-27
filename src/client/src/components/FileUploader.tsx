@@ -1,10 +1,14 @@
-import React, { useRef } from 'react';
-import { uploadFile } from '@/services/fileOperations';
+import React, { useRef, JSX } from "react";
+import { uploadFile } from "@/services/fileOperations";
 
-const FileUploader: React.FC = () => {
+function FileUploader(): JSX.Element {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  function handleButtonClick(): void {
+    fileInputRef.current?.click();
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -15,29 +19,29 @@ const FileUploader: React.FC = () => {
       alert(`Error al subir ${file.name}`);
       console.error(`Error al subir ${file.name}:`, err);
     }
+
     // Reset the file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
-    // Optionally, you can refresh the file list or perform other actions here
-    // loadFiles();
-  };
-
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
-  };
+  }
 
   return (
     <div>
       <input
         type="file"
         ref={fileInputRef}
-        style={{ display: 'none' }}
-        onChange={handleFileChange}
+        style={{ display: "none" }}
+        onChange={handleFileUpload}
       />
-      <button onClick={handleButtonClick}>Subir archivo</button>
+      <button
+        className="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded"
+        onClick={handleButtonClick}
+      >
+        Upload
+      </button>
     </div>
   );
-};
+}
 
 export default FileUploader;

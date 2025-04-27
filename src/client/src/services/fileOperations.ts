@@ -1,6 +1,19 @@
 import axiosInstance from "./axiosInstance";
 import { FileItem } from "@/common/types";
 
+export function checkFileName(filename: string): string {
+  // Validar el nombre del archivo
+  const regex = /^[a-zA-Z0-9_\-\.]+$/;
+  if (!regex.test(filename)) {
+    throw new Error("Nombre de archivo no válido");
+  }
+  // Comprobar si tiene extensión, si no, establecer .md por defecto
+  if (!filename.includes(".")) {
+    filename += ".md";
+  }
+  return filename;
+}
+
 export async function uploadFile(file: File): Promise<void> {
   const formData = new FormData();
   formData.append("file", file);
@@ -20,7 +33,7 @@ export async function uploadFile(file: File): Promise<void> {
 
 export async function fetchFiles(): Promise<FileItem[]> {
   try {
-    const response = await axiosInstance.get("/tree");
+    const response = await axiosInstance.get("/files");
     if (!response.data) {
       throw new Error("Error al obtener los archivos");
     }

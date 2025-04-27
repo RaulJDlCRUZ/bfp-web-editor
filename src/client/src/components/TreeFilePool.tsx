@@ -1,39 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, JSX } from "react";
 import axiosInstance from "@/services/axiosInstance";
+import { transformToArborist } from "@/services/treeConversion";
 import { TreeNode, fileIcons, ArboristNode } from "@/common/types";
-import { NodeApi, Tree } from "react-arborist";
+import { NodeApi, Tree, TreeApi } from "react-arborist";
+import {
+  createFile,
+  downloadFile,
+  deleteFile,
+  checkFileName,
+} from "@/services/fileOperations";
+import FileUploader from "./FileUploader";
 
-// Función para obtener el icono del nodo
-function getIcon(node: TreeNode): any {
-  if (node.nodetype === "file") {
-    return fileIcons[node.filetype] || "📄";
-  }
-}
-
-// Función recursiva para transformar el árbol de backend a formato Arborist
-function transformToArborist(node: TreeNode, basePath = ""): ArboristNode {
-  const id = `${basePath}/${node.name}`;
-  if (node.nodetype === "directory") {
-    return {
-      id,
-      name: node.name,
-      children:
-        node.children?.map((child) => transformToArborist(child, id)) ?? [],
-      data: node,
-    };
-  }
-  return {
-    id,
-    name: node.name,
-    data: node,
-  };
-}
-
-const FileTree: React.FC = () => {
+function TreeComponent(): JSX.Element {
   const [treeData, setTreeData] = useState<ArboristNode[]>([]);
   const [loading, setLoading] = useState(true);
+  const treeRef = useRef<TreeApi<ArboristNode>>(null);
+  const [selectedNodes, setSelectedNodes] = useState<NodeApi<ArboristNode>[]>(
+    []
+  );
 
-  // Función para cargar el árbol usando Promesas
   async function fetchTree(): Promise<void> {
     try {
       const response = await axiosInstance.get<TreeNode>("/tree");
@@ -49,6 +34,88 @@ const FileTree: React.FC = () => {
     }
   }
 
+  async function handleCreate(): Promise<void> {
+    const filename = checkFileName(
+      (document.getElementById("filename") as HTMLInputElement).value
+    );
+    try {
+      const result = await createFile(filename);
+      const newNode: ArboristNode = {
+        id: "/input/" + filename,
+        name: filename,
+        data: {
+          name: filename,
+          selected: false,
+          size: 0,
+          filetype: "",
+          path: "",
+          nodetype: "file",
+        },
+      };
+      setTreeData((prev: ArboristNode[]) => [...prev, newNode]);
+      console.log(result);
+      alert(`Archivo ${filename} creado con éxito`);
+    } catch (err) {
+      alert(`Error al crear ${filename}`);
+      console.error(`Error al crear ${filename}:`, err);
+    }
+  }
+
+  async function handleDelete(ArboristNode: ArboristNode): Promise<void> {
+    const filename = ArboristNode.name;
+    try {
+      // TODO: Confirmación antes de eliminar (¿window.confirm o similar?)
+      await deleteFile(filename);
+      setTreeData((prev: ArboristNode[]) =>
+        prev.filter((node) => node.id !== ArboristNode.id)
+      );
+      alert(`Archivo ${filename} eliminado con éxito`);
+    } catch (err) {
+      alert(`Error al eliminar ${filename}`);
+    }
+  }
+
+  async function handleDownload(filename: string): Promise<void> {
+    try {
+      const blob = await downloadFile(filename);
+      // Crear un enlace temporal para descargar el archivo
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      alert(`Archivo ${filename} se descargará en breve`);
+    } catch (err) {
+      alert(`Error al descargar ${filename}`);
+      console.error(`Error al descargar ${filename}:`, err);
+    }
+  }
+
+  function handleSelect(nodes: NodeApi<ArboristNode>[]): void {
+    setSelectedNodes(nodes);
+    nodes.forEach((node) => {
+      const file = node.data;
+      console.log("Seleccionado:", file);
+    });
+  }
+
+  function deselectAll(e: React.MouseEvent): void {
+    e.stopPropagation(); // Evita la propagación del evento
+    if (treeRef.current) {
+      treeRef.current.deselectAll();
+      setSelectedNodes([]);
+    }
+  }
+
+  function getIcon(node: TreeNode): any {
+    if (node.nodetype === "file") {
+      return fileIcons[node.filetype] || "📄";
+    }
+  }
+
   useEffect(() => {
     fetchTree();
   }, []);
@@ -57,38 +124,20 @@ const FileTree: React.FC = () => {
   if (!treeData.length) return <div>No se pudo cargar el árbol.</div>;
 
   return (
-    <div style={{ height: "600px" }}>
+    <div style={{ overflowY: "auto" }}>
       <Tree
+        ref={treeRef}
         data={treeData}
-        // onMove={(nodes: any, target: any, index: any) => {
-        //   console.log("Moved:", nodes, "to:", target, "at:", index);
-        //   // axiosInstance.post("/move", { nodes, target, index });
-        // }}
-        // onMove={
-        //   (info: {
-        //     dragSource: NodeApi<ArboristNode> | null;
-        //     dragTarget: NodeApi<ArboristNode> | null;
-        //     index: number;
-        //   }) => {
-        //     const { dragSource, dragTarget, index } = info;
-        //   }
-        // }
-
-        onSelect={(nodes: NodeApi<ArboristNode>[]) => {
-          nodes.forEach((node) => {
-            const file = node.data;
-            console.log("Seleccionado:", file);
-          });
-        }}
         width="100%"
         rowHeight={32}
         padding={8}
-        indent={20}
+        indent={24}
+        disableMultiSelection={false}
+        onSelect={handleSelect}
       >
         {({ node, style, dragHandle }) => {
           const arboristNode = node.data as ArboristNode;
           const item = arboristNode.data as TreeNode;
-          // Here I'm able to personalize the node, add buttons, context menus, etc. here
           return (
             <div
               style={{
@@ -97,6 +146,10 @@ const FileTree: React.FC = () => {
                 alignItems: "center",
                 justifyContent: "space-between",
                 paddingRight: "1rem",
+                backgroundColor: node.isSelected ? "#edffe8" : "white",
+                borderRadius: "1px",
+                cursor: "pointer",
+                userSelect: "none",
               }}
               ref={dragHandle}
             >
@@ -104,23 +157,71 @@ const FileTree: React.FC = () => {
                 {item.nodetype === "directory" ? "📁" : getIcon(item)}{" "}
                 {arboristNode.name}
               </span>
-              <span>
+              <span
+                style={{ visibility: node.isSelected ? "visible" : "hidden" }}
+              >
                 <button
-                  onClick={() => alert(`Renombrar: ${arboristNode.name}`)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // alert(`Descargar: ${arboristNode.name}`);
+                    handleDownload(arboristNode.name);
+                  }}
+                >
+                  ⬇️
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    alert(`Renombrar: ${arboristNode.name}`);
+                  }}
                 >
                   ✏️
                 </button>
-                <button onClick={() => alert(`Eliminar: ${arboristNode.name}`)}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // alert(`Eliminar: ${arboristNode.name}`);
+                    handleDelete(arboristNode);
+                  }}
+                >
                   🗑️
                 </button>
-                {/* Puedes reemplazar esto por un menú contextual */}
               </span>
             </div>
           );
         }}
       </Tree>
+      <div className="flex justify-between items-center mt-4">
+        {selectedNodes.length > 0 && (
+          <div className="tree-actions">
+            <button
+              className="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded"
+              onClick={deselectAll}
+            >
+              Deselect
+            </button>
+          </div>
+        )}
+        <div className="ml-auto">
+          <FileUploader />
+        </div>
+      </div>
+      <div className="flex justify-between mt-4">
+        <input
+          type="text"
+          placeholder="Enter filename..."
+          id="filename"
+          className="border border-gray-300 rounded px-2 py-1"
+        />
+        <button
+          className="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded"
+          onClick={handleCreate}
+        >
+          Create
+        </button>
+      </div>
     </div>
   );
-};
+}
 
-export default FileTree;
+export default TreeComponent;
