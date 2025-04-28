@@ -40,36 +40,36 @@ function TreeComponent(): JSX.Element {
     );
     try {
       const result = await createFile(filename);
-      const newNode: ArboristNode = {
-        id: "/input/" + filename,
-        name: filename,
-        data: {
-          name: filename,
-          selected: false,
-          size: 0,
-          filetype: "",
-          path: "",
-          nodetype: "file",
-        },
-      };
-      setTreeData((prev: ArboristNode[]) => [...prev, newNode]);
       console.log(result);
       alert(`Archivo ${filename} creado con éxito`);
+      // Let the server to re-generate the structure and refresh the tree data
+      await fetchTree();
     } catch (err) {
       alert(`Error al crear ${filename}`);
       console.error(`Error al crear ${filename}:`, err);
     }
   }
 
-  async function handleDelete(ArboristNode: ArboristNode): Promise<void> {
-    const filename = ArboristNode.name;
+  async function handleDelete(nodeToDelete: ArboristNode): Promise<void> {
+    const filename = nodeToDelete.name;
     try {
       // TODO: Confirmación antes de eliminar (¿window.confirm o similar?)
       await deleteFile(filename);
-      setTreeData((prev: ArboristNode[]) =>
-        prev.filter((node) => node.id !== ArboristNode.id)
-      );
       alert(`Archivo ${filename} eliminado con éxito`);
+      setTreeData((prev: ArboristNode[]) => {
+        const updatedTree = prev.map((node) => {
+          if (node.children) {
+            return {
+              ...node,
+              children: node.children.filter(
+                (child) => child.id !== nodeToDelete.id
+              ),
+            };
+          }
+          return node;
+        });
+        return updatedTree.filter((node) => node.id !== nodeToDelete.id);
+      });
     } catch (err) {
       alert(`Error al eliminar ${filename}`);
     }
@@ -133,11 +133,17 @@ function TreeComponent(): JSX.Element {
         padding={8}
         indent={24}
         disableMultiSelection={false}
-        onSelect={handleSelect}
+        onSelect={(nodes) => {
+          const filteredNodes = nodes.filter(
+            (node) => !(node.data as ArboristNode).restricted
+          );
+          handleSelect(filteredNodes);
+        }}
       >
         {({ node, style, dragHandle }) => {
           const arboristNode = node.data as ArboristNode;
           const item = arboristNode.data as TreeNode;
+          const isRestricted = arboristNode.restricted;
           return (
             <div
               style={{
@@ -146,10 +152,16 @@ function TreeComponent(): JSX.Element {
                 alignItems: "center",
                 justifyContent: "space-between",
                 paddingRight: "1rem",
-                backgroundColor: node.isSelected ? "#edffe8" : "white",
+                backgroundColor: node.isSelected
+                  ? isRestricted
+                    // ? "#f8d7da" // Light red for restricted nodes
+                    ? "white"      // or white to not highlight
+                    : "#edffe8" // Light green for selected nodes
+                  : "white",
                 borderRadius: "1px",
-                cursor: "pointer",
+                cursor: isRestricted ? "not-allowed" : "pointer",
                 userSelect: "none",
+                opacity: isRestricted ? 0.5 : 1, // Dim restricted nodes
               }}
               ref={dragHandle}
             >
@@ -158,12 +170,14 @@ function TreeComponent(): JSX.Element {
                 {arboristNode.name}
               </span>
               <span
-                style={{ visibility: node.isSelected ? "visible" : "hidden" }}
+                style={{
+                  visibility:
+                    node.isSelected && !isRestricted ? "visible" : "hidden",
+                }}
               >
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    // alert(`Descargar: ${arboristNode.name}`);
                     handleDownload(arboristNode.name);
                   }}
                 >
@@ -180,8 +194,12 @@ function TreeComponent(): JSX.Element {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    // alert(`Eliminar: ${arboristNode.name}`);
                     handleDelete(arboristNode);
+                  }}
+                  disabled={isRestricted}
+                  style={{
+                    cursor: isRestricted ? "not-allowed" : "pointer",
+                    opacity: isRestricted ? 0.5 : 1,
                   }}
                 >
                   🗑️

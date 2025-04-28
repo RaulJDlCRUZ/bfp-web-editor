@@ -1,5 +1,9 @@
 import express, { application, Express, Request, Response } from "express";
-import { readFilesRecursivelyLegacy, getDirectoryTree, compileDocument } from "./utils";
+import {
+  readFilesRecursivelyLegacy,
+  getDirectoryTree,
+  compileDocument,
+} from "./utils";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -22,7 +26,7 @@ export const clientPath = path.join(__dirname, "public/");
 export const folderPath = path.join(path.dirname(__dirname), inputdir);
 export const outputPath = path.join(path.dirname(__dirname), docdir);
 
-const storage: multer.StorageEngine = multer.diskStorage({
+const storage: StorageEngine = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, folderPath);
   },
@@ -82,7 +86,7 @@ app.get("/api/files", (req, res) => {
 });
 
 // Endpoint para devolver la estructura
-app.get('/api/tree', (req, res) => {
+app.get("/api/tree", (req, res) => {
   try {
     res.json(getDirectoryTree(folderPath));
   } catch (err) {
@@ -129,6 +133,73 @@ app.post("/api/files/:filename", (req, res) => {
   });
 });
 
+// Update a file
+app.patch("/api/files/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(folderPath, filename);
+  const newContent = req.body.content;
+
+  // Check if the file exists
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({ error: `File ${filePath} not found` });
+    }
+    // Update the file with new content
+    fs.writeFile(filePath, newContent, (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Error while updating the file" });
+      }
+      res.json({ success: true, message: `${filename} updated successfully` });
+    });
+  });
+});
+
+// Rename a file
+app.put("/api/files/:oldFilename/:newFilename", (req, res) => {
+  const oldFilename = req.params.oldFilename;
+  const newFilename = req.params.newFilename;
+  const oldFilePath = path.join(folderPath, oldFilename);
+  const newFilePath = path.join(folderPath, newFilename);
+
+  // Check if the file exists
+  fs.access(oldFilePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({ error: "File not found" });
+    }
+    // Rename the file
+    fs.rename(oldFilePath, newFilePath, (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Error while renaming the file" });
+      }
+      res.json({
+        success: true,
+        message: `${oldFilename} renamed to ${newFilename}`,
+      });
+    });
+  });
+});
+
+// Move a file
+app.post("/api/files/move", (req, res) => {
+  const { oldPath, newPath } = req.body;
+  const oldFilePath = path.join(folderPath, oldPath);
+  const newFilePath = path.join(folderPath, newPath);
+
+  // Check if the file exists
+  fs.access(oldFilePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({ error: "File not found" });
+    }
+    // Move the file
+    fs.rename(oldFilePath, newFilePath, (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Error while moving the file" });
+      }
+      res.json({ success: true, message: `${oldPath} moved to ${newPath}` });
+    });
+  });
+});
+
 // Remove a file
 app.delete("/api/files/:filename", (req, res) => {
   const filename = req.params.filename;
@@ -140,44 +211,6 @@ app.delete("/api/files/:filename", (req, res) => {
     }
     res.json({ success: true, message: `${filename} removed successfully` });
   });
-});
-
-/*
-Endpoint designed to update files in the input directory. Expected to receive an object with the following structure:
-{ deletions: string[], updates: { filename: string, content: string }[], additions: { filename: string, content: string }[] }
-*/
-app.post("/api/files/update", (req, res) => {
-  const { deletions, updates, additions } = req.body;
-
-  // Deletions
-  if (deletions && Array.isArray(deletions)) {
-    deletions.forEach((file) => {
-      const filePath = path.join(folderPath, file);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    });
-  }
-
-  // Updates
-  if (updates && Array.isArray(updates)) {
-    updates.forEach(({ filename, content }) => {
-      const filePath = path.join(folderPath, filename);
-      fs.writeFileSync(filePath, content, "utf8");
-    });
-  }
-
-  // Additions
-  if (additions && Array.isArray(additions)) {
-    additions.forEach(({ filename, content }) => {
-      const filePath = path.join(folderPath, filename);
-      fs.writeFileSync(filePath, content, "utf8");
-    });
-  }
-
-  // Then, we can compute functions with the updated files, such as compileDocument
-  // compileDocument();
-  res.json({ success: true });
 });
 
 app.get("/api/compile", (req, res) => {

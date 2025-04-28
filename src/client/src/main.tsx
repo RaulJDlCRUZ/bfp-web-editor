@@ -6,7 +6,6 @@ import App from "./App";
 
 import BasicCompilePage from "./pages/BasicCompilePage";
 import CompilePagev2 from "./pages/CompilePagev2";
-import CompilePagev2a from "./pages/CompilePagev2a";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -14,7 +13,6 @@ createRoot(document.getElementById("root")!).render(
       <App>
         <Routes>
           <Route path="/" element={<CompilePagev2 />} />
-          <Route path="/a" element={<CompilePagev2a />} />
           <Route path="/legacy" element={<BasicCompilePage />} />
         </Routes>
       </App>
