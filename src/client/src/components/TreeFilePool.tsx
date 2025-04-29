@@ -13,7 +13,6 @@ import FileUploader from "./FileUploader";
 
 function TreeComponent(): JSX.Element {
   const [treeData, setTreeData] = useState<ArboristNode[]>([]);
-  const [loading, setLoading] = useState(true);
   const treeRef = useRef<TreeApi<ArboristNode>>(null);
   const [selectedNodes, setSelectedNodes] = useState<NodeApi<ArboristNode>[]>(
     []
@@ -29,8 +28,6 @@ function TreeComponent(): JSX.Element {
       setTreeData([transformed]);
     } catch (error) {
       console.error("Error al cargar el árbol:", error);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -120,9 +117,6 @@ function TreeComponent(): JSX.Element {
     fetchTree();
   }, []);
 
-  if (loading) return <div>Cargando...</div>;
-  if (!treeData.length) return <div>No se pudo cargar el árbol.</div>;
-
   return (
     <div style={{ overflowY: "auto" }}>
       <Tree
@@ -154,8 +148,8 @@ function TreeComponent(): JSX.Element {
                 paddingRight: "1rem",
                 backgroundColor: node.isSelected
                   ? isRestricted
-                    // ? "#f8d7da" // Light red for restricted nodes
-                    ? "white"      // or white to not highlight
+                    ? // ? "#f8d7da" // Light red for restricted nodes
+                      "white" // or white to not highlight
                     : "#edffe8" // Light green for selected nodes
                   : "white",
                 borderRadius: "1px",
@@ -225,6 +219,7 @@ function TreeComponent(): JSX.Element {
         </div>
       </div>
       <div className="flex justify-between mt-4">
+        {/* Create an horizontal line */}
         <input
           type="text"
           placeholder="Enter filename..."

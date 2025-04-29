@@ -1,9 +1,9 @@
-import { useState } from "react";
+import React, { useState, Suspense } from "react";
 import CompileButton from "@/components/CompileButton/CompileButton";
-import TreeComponent from "@/components/TreeFilePool";
 import TextArea from "@/components/TextArea";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
+const FileTree = React.lazy(() => import("@/components/TreeFilePool"));
 
 const NextCompilePage: React.FC = () => {
   const [documentData, setDocumentData] = useState<string | null>(null);
@@ -16,7 +16,17 @@ const NextCompilePage: React.FC = () => {
             <p className="text-gray-500 text-xl mt-4">File Listing</p>
           </div>
           <div className="mt-8 h-2/8">
-            <TreeComponent />
+            <Suspense
+              fallback={
+                <div>
+                  <p className="text-gray-500 text-xl text-center mt-4">
+                    Loading...
+                  </p>
+                </div>
+              }
+            >
+              <FileTree />
+            </Suspense>
           </div>
         </div>
         <div className="text-right w-2/3">

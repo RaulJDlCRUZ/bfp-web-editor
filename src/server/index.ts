@@ -44,7 +44,6 @@ const upload = multer({
 }).single("file");
 
 // Serve static files from the frontend
-// MUST FIX: Avoid serving e.g. index.html if client is not in execution
 app.use(express.static(clientPath));
 
 // Serve input files from its directory
@@ -54,6 +53,10 @@ app.use("/input", express.static(folderPath));
 app.use("/output", express.static(outputPath));
 
 // Define routes before static file serving middleware
+app.get("*", (req, res) => {
+  res.sendFile(path.join(clientPath, "index.html"));
+});
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(clientPath, "index.html"));
 });
@@ -180,7 +183,7 @@ app.put("/api/files/:oldFilename/:newFilename", (req, res) => {
 });
 
 // Move a file
-app.post("/api/files/move", (req, res) => {
+app.post("/api/move", (req, res) => {
   const { oldPath, newPath } = req.body;
   const oldFilePath = path.join(folderPath, oldPath);
   const newFilePath = path.join(folderPath, newPath);

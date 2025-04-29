@@ -1,5 +1,5 @@
 /* Adapted from: https://www.material-tailwind.com/docs/html/textarea */
-import React, { useEffect, useState, JSX } from "react";
+import { JSX } from "react";
 
 function TextArea(): JSX.Element {
   return (
