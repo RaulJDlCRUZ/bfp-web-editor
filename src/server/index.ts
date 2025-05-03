@@ -52,11 +52,6 @@ app.use("/input", express.static(folderPath));
 // Serve result from a specific directory
 app.use("/output", express.static(outputPath));
 
-// Define routes before static file serving middleware
-app.get("*", (req, res) => {
-  res.sendFile(path.join(clientPath, "index.html"));
-});
-
 app.get("/", (req, res) => {
   res.sendFile(path.join(clientPath, "index.html"));
 });
@@ -97,10 +92,34 @@ app.get("/api/tree", (req, res) => {
   }
 });
 
-// Get a specific file
-app.get("/api/files/:filename", (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(folderPath, filename);
+// Move a file
+app.post("/api/move", (req, res) => {
+  const { oldPath, newPath } = req.body;
+  const oldFilePath = path.join(folderPath, oldPath);
+  const newFilePath = path.join(folderPath, newPath);
+
+  // Check if the file exists
+  fs.access(oldFilePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({ error: "File not found" });
+    }
+    // Move the file
+    fs.rename(oldFilePath, newFilePath, (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Error while moving the file" });
+      }
+      res.json({ success: true, message: `${oldPath} moved to ${newPath}` });
+    });
+  });
+});
+
+// Get a specific file (supports nested paths)
+app.get("/api/files/*", (req, res) => {
+  const filePath = path.join(
+    folderPath,
+    // accessing the first parameter of the wildcard ("0"), treated as a string both key and value
+    (req.params as { [key: string]: string })[0]
+  );
 
   // If file is visible in the directory, we can serve it (check err first)
   fs.access(filePath, fs.constants.F_OK, (err) => {
@@ -108,7 +127,7 @@ app.get("/api/files/:filename", (req, res) => {
       return res.status(404).json({ error: "File not found" });
     }
 
-    res.download(filePath, filename, (err) => {
+    res.download(filePath, path.basename(filePath), (err) => {
       if (err) {
         res.status(500).json({ error: "Error while downloading the file" });
       }
@@ -137,9 +156,12 @@ app.post("/api/files/:filename", (req, res) => {
 });
 
 // Update a file
-app.patch("/api/files/:filename", (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(folderPath, filename);
+app.patch("/api/files/*", (req, res) => {
+  const filePath = path.join(
+    folderPath,
+    // accessing the first parameter of the wildcard ("0"), treated as a string both key and value
+    (req.params as { [key: string]: string })[0]
+  );
   const newContent = req.body.content;
 
   // Check if the file exists
@@ -152,7 +174,7 @@ app.patch("/api/files/:filename", (req, res) => {
       if (err) {
         return res.status(500).json({ error: "Error while updating the file" });
       }
-      res.json({ success: true, message: `${filename} updated successfully` });
+      res.json({ success: true, message: `${filePath} updated successfully` });
     });
   });
 });
@@ -182,37 +204,19 @@ app.put("/api/files/:oldFilename/:newFilename", (req, res) => {
   });
 });
 
-// Move a file
-app.post("/api/move", (req, res) => {
-  const { oldPath, newPath } = req.body;
-  const oldFilePath = path.join(folderPath, oldPath);
-  const newFilePath = path.join(folderPath, newPath);
-
-  // Check if the file exists
-  fs.access(oldFilePath, fs.constants.F_OK, (err) => {
-    if (err) {
-      return res.status(404).json({ error: "File not found" });
-    }
-    // Move the file
-    fs.rename(oldFilePath, newFilePath, (err) => {
-      if (err) {
-        return res.status(500).json({ error: "Error while moving the file" });
-      }
-      res.json({ success: true, message: `${oldPath} moved to ${newPath}` });
-    });
-  });
-});
-
 // Remove a file
-app.delete("/api/files/:filename", (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(folderPath, filename);
+app.delete("/api/files/*", (req, res) => {
+  const filePath = path.join(
+    folderPath,
+    // accessing the first parameter of the wildcard ("0"), treated as a string both key and value
+    (req.params as { [key: string]: string })[0]
+  );
 
   fs.unlink(filePath, (err) => {
     if (err) {
       return res.status(500).json({ error: "Error while removing the file" });
     }
-    res.json({ success: true, message: `${filename} removed successfully` });
+    res.json({ success: true, message: `${filePath} removed successfully` });
   });
 });
 
@@ -229,6 +233,15 @@ app.get("/api/result", (req, res) => {
       res.status(404).send("File not found");
     }
   });
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK" });
+});
+
+// Catch-all with filtering
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(path.join(clientPath, "index.html"));
 });
 
 app.listen(port, () => {

@@ -1,6 +1,7 @@
 import React, { useState, Suspense } from "react";
 import CompileButton from "@/components/CompileButton/CompileButton";
 import TextArea from "@/components/TextArea";
+import { FileExplorerProvider } from "@/context/FileExplorerContext";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
 const FileTree = React.lazy(() => import("@/components/TreeFilePool"));
@@ -9,6 +10,7 @@ const NextCompilePage: React.FC = () => {
   const [documentData, setDocumentData] = useState<string | null>(null);
 
   return (
+    <FileExplorerProvider>
     <div className="flex flex-col items-center justify-start pt-10">
       <div className="flex w-full">
         <div className="text-left w-1/3">
@@ -68,6 +70,7 @@ const NextCompilePage: React.FC = () => {
         </div>
       )}
     </div>
+    </FileExplorerProvider>
   );
 };
 

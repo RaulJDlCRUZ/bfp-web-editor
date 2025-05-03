@@ -10,13 +10,12 @@ import {
   checkFileName,
 } from "@/services/fileOperations";
 import FileUploader from "./FileUploader";
+import { useFileExplorerContext } from "@/hooks/FileExplorerHook";
 
 function TreeComponent(): JSX.Element {
   const [treeData, setTreeData] = useState<ArboristNode[]>([]);
   const treeRef = useRef<TreeApi<ArboristNode>>(null);
-  const [selectedNodes, setSelectedNodes] = useState<NodeApi<ArboristNode>[]>(
-    []
-  );
+  const { selectNode } = useFileExplorerContext();
 
   async function fetchTree(): Promise<void> {
     try {
@@ -31,44 +30,34 @@ function TreeComponent(): JSX.Element {
     }
   }
 
-  async function handleCreate(): Promise<void> {
-    const filename = checkFileName(
-      (document.getElementById("filename") as HTMLInputElement).value
-    );
-    try {
-      const result = await createFile(filename);
-      console.log(result);
-      alert(`Archivo ${filename} creado con éxito`);
-      // Let the server to re-generate the structure and refresh the tree data
-      await fetchTree();
-    } catch (err) {
-      alert(`Error al crear ${filename}`);
-      console.error(`Error al crear ${filename}:`, err);
+  function deselectAll(e: React.MouseEvent): void {
+    e.stopPropagation(); // Evita la propagación del evento
+    if (treeRef.current) {
+      treeRef.current.deselectAll();
+      selectNode(null);
     }
   }
 
-  async function handleDelete(nodeToDelete: ArboristNode): Promise<void> {
-    const filename = nodeToDelete.name;
-    try {
-      // TODO: Confirmación antes de eliminar (¿window.confirm o similar?)
-      await deleteFile(filename);
-      alert(`Archivo ${filename} eliminado con éxito`);
-      setTreeData((prev: ArboristNode[]) => {
-        const updatedTree = prev.map((node) => {
-          if (node.children) {
-            return {
-              ...node,
-              children: node.children.filter(
-                (child) => child.id !== nodeToDelete.id
-              ),
-            };
-          }
-          return node;
-        });
-        return updatedTree.filter((node) => node.id !== nodeToDelete.id);
-      });
-    } catch (err) {
-      alert(`Error al eliminar ${filename}`);
+  function getIcon(node: TreeNode): any {
+    if (node.nodetype === "file") {
+      return fileIcons[node.filetype] || "📄";
+    }
+  }
+
+  function handleSelect(nodes: NodeApi<ArboristNode>[]): void {
+    const filteredNodes = nodes.filter(
+      (node) =>
+        !(node.data as ArboristNode).restricted ||
+        ((node.data as ArboristNode).restricted &&
+          (node.data as ArboristNode).edit)
+    );
+    if (filteredNodes.length > 0) {
+      const node = filteredNodes[0];
+      selectNode(node.data);
+      const file = node.data;
+      console.log("Seleccionado:", file);
+    } else {
+      selectNode(null);
     }
   }
 
@@ -91,25 +80,57 @@ function TreeComponent(): JSX.Element {
     }
   }
 
-  function handleSelect(nodes: NodeApi<ArboristNode>[]): void {
-    setSelectedNodes(nodes);
-    nodes.forEach((node) => {
-      const file = node.data;
-      console.log("Seleccionado:", file);
-    });
-  }
-
-  function deselectAll(e: React.MouseEvent): void {
-    e.stopPropagation(); // Evita la propagación del evento
-    if (treeRef.current) {
-      treeRef.current.deselectAll();
-      setSelectedNodes([]);
+  async function handleCreate(): Promise<void> {
+    const filename = checkFileName(
+      (document.getElementById("filename") as HTMLInputElement).value
+    );
+    try {
+      const result = await createFile(filename);
+      console.log(result);
+      alert(`Archivo ${filename} creado con éxito`);
+      // Let the server to re-generate the structure and refresh the tree data
+      await fetchTree();
+    } catch (err) {
+      alert(`Error al crear ${filename}`);
+      console.error(`Error al crear ${filename}:`, err);
     }
   }
 
-  function getIcon(node: TreeNode): any {
-    if (node.nodetype === "file") {
-      return fileIcons[node.filetype] || "📄";
+  async function handleDelete(nodeToDelete: ArboristNode): Promise<void> {
+    if (nodeToDelete.restricted || nodeToDelete.data.nodetype === "directory")
+      return;
+    const filename = nodeToDelete.name;
+    const deleteID = nodeToDelete.id;
+    const file = nodeToDelete.data.path;
+    // TODO: Confirmación antes de eliminar (¿window.confirm o similar?)
+    if (!window.confirm(`¿Está seguro de que desea eliminar ${filename}?`)) {
+      return;
+    }
+    try {
+      await deleteFile(file);
+      alert(`Archivo ${filename} eliminado con éxito`);
+      setTreeData((prev: ArboristNode[]) => {
+        const updateTree = (nodes: ArboristNode[]): ArboristNode[] => {
+          return nodes
+            .map((node) => {
+              if (node.children) {
+                return {
+                  ...node,
+                  children: updateTree(
+                    node.children.filter(
+                      (child) => child.id !== nodeToDelete.id
+                    )
+                  ),
+                };
+              }
+              return node;
+            })
+            .filter((node) => node.id !== deleteID);
+        };
+        return updateTree(prev);
+      });
+    } catch (err) {
+      alert(`Error al eliminar ${filename}`);
     }
   }
 
@@ -127,17 +148,13 @@ function TreeComponent(): JSX.Element {
         padding={8}
         indent={24}
         disableMultiSelection={false}
-        onSelect={(nodes) => {
-          const filteredNodes = nodes.filter(
-            (node) => !(node.data as ArboristNode).restricted
-          );
-          handleSelect(filteredNodes);
-        }}
+        onSelect={handleSelect}
       >
         {({ node, style, dragHandle }) => {
           const arboristNode = node.data as ArboristNode;
           const item = arboristNode.data as TreeNode;
           const isRestricted = arboristNode.restricted;
+          const isEditable = arboristNode.edit;
           return (
             <div
               style={{
@@ -147,15 +164,12 @@ function TreeComponent(): JSX.Element {
                 justifyContent: "space-between",
                 paddingRight: "1rem",
                 backgroundColor: node.isSelected
-                  ? isRestricted
-                    ? // ? "#f8d7da" // Light red for restricted nodes
-                      "white" // or white to not highlight
+                  ? isRestricted && !isEditable
+                    ? "white" // or white to not highlight
                     : "#edffe8" // Light green for selected nodes
                   : "white",
                 borderRadius: "1px",
-                cursor: isRestricted ? "not-allowed" : "pointer",
                 userSelect: "none",
-                opacity: isRestricted ? 0.5 : 1, // Dim restricted nodes
               }}
               ref={dragHandle}
             >
@@ -204,7 +218,7 @@ function TreeComponent(): JSX.Element {
         }}
       </Tree>
       <div className="flex justify-between items-center mt-4">
-        {selectedNodes.length > 0 && (
+        {selectNode.length > 0 && (
           <div className="tree-actions">
             <button
               className="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded"

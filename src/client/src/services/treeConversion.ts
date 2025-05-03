@@ -3,6 +3,8 @@ import {
   ArboristNode,
   restrictedFiles,
   restrictedDirectories,
+  editableFiles,
+  FileItem,
 } from "@/common/types";
 
 function isRestricted(fid: string, node: TreeNode): boolean {
@@ -17,6 +19,10 @@ function isRestricted(fid: string, node: TreeNode): boolean {
   return false;
 }
 
+function isEditable(fid: string, node: FileItem): boolean {
+  return !!editableFiles[node.path] || !!editableFiles[fid];
+}
+
 // Función recursiva para transformar el árbol de backend a formato Arborist
 export function transformToArborist(
   node: TreeNode,
@@ -28,6 +34,7 @@ export function transformToArborist(
       id,
       name: node.name,
       restricted: isRestricted(id, node),
+      edit: false,
       children:
         node.children?.map((child) => transformToArborist(child, id)) ?? [],
       data: node,
@@ -37,6 +44,7 @@ export function transformToArborist(
     id,
     name: node.name,
     restricted: isRestricted(id, node),
+    edit: isEditable(id, node as FileItem),
     data: node,
   };
 }
