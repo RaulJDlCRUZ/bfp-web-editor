@@ -1,13 +1,18 @@
 {
-  "files": [],
+  "extends": "../../tsconfig.json",
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
+  "files": [],
   "compilerOptions": {
-    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "baseUrl": "./src",
+    "composite": true,
     "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
+      "@/*": ["*"]
+    },
+    "outDir": "../../dist/public/assets" // Maybe Vite will ignore this
+  },
+  "include": ["src/**/*"]
 }

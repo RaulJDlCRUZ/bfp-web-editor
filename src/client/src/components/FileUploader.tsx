@@ -15,6 +15,7 @@ function FileUploader(): JSX.Element {
     try {
       await uploadFile(file);
       alert(`Archivo ${file.name} subido con éxito`);
+      // TODO: call fetchTree(); from FileTree
     } catch (err) {
       alert(`Error al subir ${file.name}`);
       console.error(`Error al subir ${file.name}:`, err);

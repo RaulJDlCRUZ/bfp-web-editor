@@ -1,8 +1,7 @@
 module.exports = {
   content: [
     './index.html',
-    './src/**/*.{js,jsx,ts,tsx}', // Escanea todos los archivos relevantes en src/
-    '../../dist/**/*.{js,jsx,ts,tsx}', // Servir frontend desde el backend
+    './src/**/*.{js,jsx,ts,tsx}',
   ],
   theme: {
     extend: {

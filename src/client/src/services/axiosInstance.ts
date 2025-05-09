@@ -17,6 +17,4 @@ const axiosInstance = axios.create({
   },
 });
 
-// console.log("Backend URI:", BACKEND_URI);
-
 export default axiosInstance;

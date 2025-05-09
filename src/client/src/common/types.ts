@@ -5,7 +5,6 @@ export interface FileItem {
   filetype: string;
   path: string;
   nodetype: 'file';
-  // TODO: Add more properties as needed, e.g., content** or edition flags
 }
 
 export interface DirectoryItem {
@@ -86,6 +85,5 @@ export const editableFiles: { [extension: string]: boolean } = {
 
 // This interface is used to define the structure of the response from the server when compiling the document
 export interface CompileButtonProps {
-  setDocumentData: (data: string) => void;
-  // setDocumentData: React.Dispatch<React.SetStateAction<string | null>>;
+  setDocumentData: (data: string | null) => void;
 }

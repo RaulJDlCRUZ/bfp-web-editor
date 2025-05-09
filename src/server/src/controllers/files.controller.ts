@@ -1,30 +1,8 @@
-import express, { application, Express, Request, Response } from "express";
-import {
-  readFilesRecursivelyLegacy,
-  getDirectoryTree,
-  compileDocument,
-} from "./utils";
-import dotenv from "dotenv";
+import { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
-import cors from "cors";
 import multer, { StorageEngine } from "multer";
-
-dotenv.config({ override: true });
-
-const app: Express = express();
-const port = process.env.PORT || 5000;
-const inputdir = process.env.INFILEPATH || "input";
-const docdir = process.env.RESFILEPATH || "output";
-const file = process.env.RESFILENAMEDEF || "tfgii.pdf";
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-export const clientPath = path.join(__dirname, "public/");
-export const folderPath = path.join(path.dirname(__dirname), inputdir);
-export const outputPath = path.join(path.dirname(__dirname), docdir);
+import { folderPath } from "../index.js";
 
 const storage: StorageEngine = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -43,21 +21,40 @@ const upload = multer({
   },
 }).single("file");
 
-// Serve static files from the frontend
-app.use(express.static(clientPath));
+/* Función recursiva para construir el árbol de directorios */
+function getDirectoryTree(dirPath: string): any {
+  const stats = fs.statSync(dirPath);
+  const name = path.basename(dirPath);
 
-// Serve input files from its directory
-app.use("/input", express.static(folderPath));
+  if (stats.isDirectory()) {
+    const children = fs
+      .readdirSync(dirPath)
+      .map((child) => getDirectoryTree(path.join(dirPath, child)));
+    return {
+      name,
+      nodetype: "directory",
+      children,
+    };
+  } else {
+    return {
+      name,
+      nodetype: "file",
+      size: stats.size,
+      filetype: path.extname(name).slice(1), // Remove the dot
+      path: path.relative(folderPath, dirPath),
+    };
+  }
+}
 
-// Serve result from a specific directory
-app.use("/output", express.static(outputPath));
+export function getAllFiles(req: Request, res: Response) {
+  try {
+    res.json(getDirectoryTree(folderPath));
+  } catch (err) {
+    res.status(500).json({ error: "Error reading directory:\n", err });
+  }
+}
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(clientPath, "index.html"));
-});
-
-// Middleware to handle file uploads
-app.post("/api/upload", (req, res) => {
+export function uploadFile(req: Request, res: Response) {
   upload(req, res, function (err) {
     if (err) {
       return res.status(500).json({ error: "Error uploading file" });
@@ -69,29 +66,9 @@ app.post("/api/upload", (req, res) => {
     }
     return res.json({ success: true, message: "File uploaded successfully" });
   });
-});
+}
 
-// Get input files (recursively)
-app.get("/api/files", (req, res) => {
-  try {
-    const files = readFilesRecursivelyLegacy(folderPath);
-    res.json({ files });
-  } catch (err) {
-    res.status(500).json({ error: "Error reading directory:\n", err });
-  }
-});
-
-// Endpoint para devolver la estructura
-app.get("/api/tree", (req, res) => {
-  try {
-    res.json(getDirectoryTree(folderPath));
-  } catch (err) {
-    res.status(500).json({ error: "Error reading directory:\n", err });
-  }
-});
-
-// Rename a file
-app.put("/api/files/rename", (req, res) => {
+export function renameFile(req: Request, res: Response) {
   const oldFile = req.body.oldFile; // path
   const newFilename = req.body.newFilename;
   const oldFilePath = path.join(folderPath, oldFile);
@@ -102,7 +79,6 @@ app.put("/api/files/rename", (req, res) => {
     if (err) {
       return res.status(404).json({ error: `File ${oldFile} not found` });
     }
-    // Rename the file
     fs.rename(oldFilePath, newFilePath, (err) => {
       if (err) {
         return res
@@ -115,10 +91,9 @@ app.put("/api/files/rename", (req, res) => {
       });
     });
   });
-});
+}
 
-// Move a file
-app.post("/api/files/move", (req, res) => {
+export function moveFile(req: Request, res: Response) {
   const oldPath = req.body.oldPath; // path
   const newPath = req.body.newPath; // path (without filename to distinguish with rename)
   const oldFilePath = path.join(folderPath, oldPath);
@@ -144,10 +119,9 @@ app.post("/api/files/move", (req, res) => {
       });
     });
   });
-});
+}
 
-// Create a new directory
-app.post("/api/files/create-directory", (req, res) => {
+export function makeDirectory(req: Request, res: Response) {
   const dirName = req.body.name;
   const basepath = req.body.path ? req.body.path : "./";
   const dirPath = path.join(folderPath, basepath, dirName);
@@ -157,7 +131,6 @@ app.post("/api/files/create-directory", (req, res) => {
     if (!err) {
       return res.status(400).json({ error: "Directory already exists" });
     }
-    // Create the directory
     fs.mkdir(dirPath, { recursive: true }, (err) => {
       if (err) {
         return res
@@ -167,10 +140,9 @@ app.post("/api/files/create-directory", (req, res) => {
       res.json({ success: true, message: `${dirName} created successfully` });
     });
   });
-});
+}
 
-// Create a new file
-app.post("/api/files/:filename", (req, res) => {
+export function createFile(req: Request, res: Response) {
   const filename = req.params.filename;
   const filePath = path.join(folderPath, filename);
 
@@ -187,10 +159,9 @@ app.post("/api/files/:filename", (req, res) => {
       res.json({ success: true, message: `${filename} created successfully` });
     });
   });
-});
+}
 
-// Get a specific file (supports nested paths)
-app.get("/api/files/*", (req, res) => {
+export function getFile(req: Request, res: Response) {
   const filePath = path.join(
     folderPath,
     // accessing the first parameter of the wildcard ("0"), treated as a string both key and value
@@ -209,10 +180,9 @@ app.get("/api/files/*", (req, res) => {
       }
     });
   });
-});
+}
 
-// Update a file
-app.patch("/api/files/*", (req, res) => {
+export function updateFile(req: Request, res: Response) {
   const filePath = path.join(
     folderPath,
     // accessing the first parameter of the wildcard ("0"), treated as a string both key and value
@@ -225,7 +195,6 @@ app.patch("/api/files/*", (req, res) => {
     if (err) {
       return res.status(404).json({ error: `File ${filePath} not found` });
     }
-    // Update the file with new content
     fs.writeFile(filePath, newContent, (err) => {
       if (err) {
         return res.status(500).json({ error: "Error while updating the file" });
@@ -233,10 +202,9 @@ app.patch("/api/files/*", (req, res) => {
       res.json({ success: true, message: `${filePath} updated successfully` });
     });
   });
-});
+}
 
-// Remove a file
-app.delete("/api/files/*", (req, res) => {
+export function deleteFile(req: Request, res: Response) {
   const filePath = path.join(
     folderPath,
     // accessing the first parameter of the wildcard ("0"), treated as a string both key and value
@@ -249,33 +217,24 @@ app.delete("/api/files/*", (req, res) => {
     }
     res.json({ success: true, message: `${filePath} removed successfully` });
   });
-});
+}
 
-app.get("/api/compile", (req, res) => {
-  console.debug("Starting make process...");
-  compileDocument(res);
-});
+export function deleteDirectory(req: Request, res: Response) {
+  const dirPath = path.join(folderPath, req.params[0]);
 
-// Specific route to serve the PDF file
-app.get("/api/result", (req, res) => {
-  res.sendFile(path.resolve(path.join(docdir, file)), (err) => {
+  // Check if the directory exists
+  fs.access(dirPath, fs.constants.F_OK, (err) => {
     if (err) {
-      console.error("Error while sending the file:", err);
-      res.status(404).send("File not found");
+      return res.status(404).json({ error: "Directory not found" });
     }
+    // Remove the directory and its contents
+    fs.rmdir(dirPath, { recursive: true }, (err) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "Error while removing the directory" });
+      }
+      res.json({ success: true, message: `${dirPath} removed successfully` });
+    });
   });
-});
-
-app.get("/api/health", (req, res) => {
-  res.json({ status: "OK" });
-});
-
-// Catch-all with filtering
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(clientPath, "index.html"));
-});
-
-app.listen(port, () => {
-  // TODO: Remove unnecessary console logs and older PDF before starting
-  console.log(`[server]: Server is running at http://localhost:${port}`);
-});
+}

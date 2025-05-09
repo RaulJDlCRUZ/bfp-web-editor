@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CompileButtonProps } from "@/common/types";
-import fetchDocument from "@/services/fetchDocument";
+import { fetchDocument, printDocument } from "@/services/documentOperations";
 import styles from "./CompileButton.module.css";
 
 const CompileButton: React.FC<CompileButtonProps> = ({ setDocumentData }) => {
@@ -9,16 +9,23 @@ const CompileButton: React.FC<CompileButtonProps> = ({ setDocumentData }) => {
 
   async function handleClick() {
     setIsLoading(true);
+    setDocumentData(null);
     setButtonText("Compiling...");
     try {
       const response = await fetchDocument();
       if (!response) {
-        setButtonText("Error");
+        setButtonText("No Response. Try again later.");
         return;
       }
-      setDocumentData(response.data.pdf);
+      const documentUrl = await printDocument();
+      if (documentUrl) {
+        setDocumentData(documentUrl);
+      } else {
+        console.error("Failed to generate document URL.");
+      }
       setButtonText("Re-compile");
     } catch (error) {
+      console.error("Error fetching document:", error);
       setButtonText("Error");
     } finally {
       setIsLoading(false);

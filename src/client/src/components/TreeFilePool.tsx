@@ -20,7 +20,7 @@ function TreeComponent(): JSX.Element {
 
   async function fetchTree(): Promise<void> {
     try {
-      const response = await axiosInstance.get("/tree");
+      const response = await axiosInstance.get("/files");
       if (!response) {
         throw new Error("Error al obtener el árbol");
       }
@@ -34,9 +34,7 @@ function TreeComponent(): JSX.Element {
   async function handleMoveMode(): Promise<void> {
     try {
       if (!movingNode) return;
-      // alert(`Nodo a mover: ${JSON.stringify(movingNode.id, null, 2)}`);
       selectNode(null);
-      // TODO: add file move support by axios
     } catch (error) {
       console.error("Error al intentar mover el archivo:", error);
     }
@@ -54,7 +52,6 @@ function TreeComponent(): JSX.Element {
           selectNode(null);
           return;
         }
-        // alert(`Origen: ${movingNode.id} Destino: ${dest} ✔️`);
         handleMoveFile(movingNode, inputNode);
         setMovingNode(null);
         selectNode(null);
@@ -71,33 +68,16 @@ function TreeComponent(): JSX.Element {
     destiny: ArboristNode
   ): Promise<void> {
     try {
-      const oldPath = origin.id.split("/input/")[1];
-      const newPath = destiny.id.split("/input/")[1];
+      const oldPath = origin.id.split("/input/")[1] || "./";
+      const newPath = destiny.id.split("/input/")[1] || "./";
       await axiosInstance
         .post("/files/move", {
           oldPath: oldPath,
           newPath: newPath,
         })
-        .then(() => {
+        .then(async () => {
           alert(`Archivo movido a ${newPath}/${origin.name}`);
-          setTreeData((prev: ArboristNode[]) => {
-            const updateTree = (nodes: ArboristNode[]): ArboristNode[] => {
-              return nodes.map((node) => {
-                if (node.id === origin.id) {
-                  return {
-                    ...node,
-                    id: `${destiny.id}/${origin.name}`,
-                    name: origin.name,
-                  };
-                }
-                if (node.children) {
-                  return { ...node, children: updateTree(node.children) };
-                }
-                return node;
-              });
-            };
-            return updateTree(prev);
-          });
+          fetchTree();
         })
         .catch((err) => {
           alert(`Error al mover el archivo`);
@@ -109,7 +89,7 @@ function TreeComponent(): JSX.Element {
     }
   }
 
-  function handleRename(nodeToRename: ArboristNode): void {
+  async function handleRename(nodeToRename: ArboristNode): Promise<void> {
     // TODO: add rename support for directories
     if (nodeToRename.restricted || nodeToRename.data.nodetype === "directory")
       return;
@@ -131,22 +111,9 @@ function TreeComponent(): JSX.Element {
           oldFile: file,
           newFilename: checkedName,
         })
-        .then(() => {
+        .then(async () => {
           alert(`Archivo renombrado a ${newName}`);
-          setTreeData((prev: ArboristNode[]) => {
-            const updateTree = (nodes: ArboristNode[]): ArboristNode[] => {
-              return nodes.map((node) => {
-                if (node.id === nodeToRename.id) {
-                  return { ...node, name: newName };
-                }
-                if (node.children) {
-                  return { ...node, children: updateTree(node.children) };
-                }
-                return node;
-              });
-            };
-            return updateTree(prev);
-          });
+          fetchTree();
         })
         .catch((err) => {
           alert(`Error al renombrar ${nodeToRename.name}`);
@@ -200,19 +167,7 @@ function TreeComponent(): JSX.Element {
       const result = await createFile(filename);
       console.log(result);
       alert(`Archivo ${filename} creado con éxito`);
-      // Let the server to re-generate the structure and refresh the tree data
-      setTreeData((prev: ArboristNode[]) => {
-        const updateTree = (nodes: ArboristNode[]): ArboristNode[] => {
-          return nodes.map((node) => {
-            if (node.children) {
-              return { ...node, children: updateTree(node.children) };
-            }
-            return node;
-          });
-        };
-        return updateTree(prev);
-      });
-      // await fetchTree();
+      await fetchTree();
     } catch (err) {
       alert(`Error al crear ${filename}`);
       console.error(`Error al crear ${filename}:`, err);
@@ -228,13 +183,15 @@ function TreeComponent(): JSX.Element {
       try {
         const checkedName = checkFileName(dirName);
         alert(`Directory ${checkedName} created`);
-        axiosInstance.post("/files/create-directory", {
+        axiosInstance.post("/files/mkdir", {
           name: checkedName,
           path: path,
         });
       } catch (err) {
         alert(`Error al crear ${dirName}`);
         console.error(`Error al crear ${dirName}:`, err);
+      } finally {
+        fetchTree();
       }
     }
   }
@@ -243,7 +200,6 @@ function TreeComponent(): JSX.Element {
     if (nodeToDelete.restricted || nodeToDelete.data.nodetype === "directory")
       return;
     const filename = nodeToDelete.name;
-    const deleteID = nodeToDelete.id;
     const file = nodeToDelete.data.path;
     if (!window.confirm(`¿Está seguro de que desea eliminar ${filename}?`)) {
       return;
@@ -251,24 +207,7 @@ function TreeComponent(): JSX.Element {
     try {
       await deleteFile(file);
       alert(`Archivo ${filename} eliminado con éxito`);
-      setTreeData((prev: ArboristNode[]) => {
-        const updateTree = (nodes: ArboristNode[]): ArboristNode[] => {
-          return nodes
-            .map((node) => {
-              if (node.children) {
-                return {
-                  ...node,
-                  children: updateTree(
-                    node.children.filter((child) => child.id !== deleteID)
-                  ),
-                };
-              }
-              return node;
-            })
-            .filter((node) => node.id !== deleteID);
-        };
-        return updateTree(prev);
-      });
+      await fetchTree();
     } catch (err) {
       alert(`Error al eliminar ${filename}`);
     }
@@ -282,7 +221,6 @@ function TreeComponent(): JSX.Element {
   useEffect(() => {
     if (movingNode) {
       handleMoveMode();
-      // setMovingNode(null);
     }
   }, [movingNode]);
 
@@ -291,6 +229,7 @@ function TreeComponent(): JSX.Element {
       <Tree
         ref={treeRef}
         data={treeData}
+        height={400}
         width="100%"
         rowHeight={24}
         padding={8}
@@ -437,7 +376,6 @@ function TreeComponent(): JSX.Element {
         </div>
       </div>
       <div className="flex justify-between mt-4">
-        {/* Create an horizontal line */}
         <input
           type="text"
           placeholder="Enter filename..."

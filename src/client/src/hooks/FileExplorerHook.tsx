@@ -1,7 +1,10 @@
 import { useContext } from "react";
-import { FileExplorerContext } from "@/context/FileExplorerContext";
+import {
+  FileExplorerContext,
+  FileExplorerContextType,
+} from "@/context/FileExplorerContext";
 
-export function useFileExplorerContext() {
+export function useFileExplorerContext(): FileExplorerContextType {
   const context = useContext(FileExplorerContext);
   if (context === undefined) {
     throw new Error(

@@ -2,7 +2,7 @@ import React, { createContext, useState } from "react";
 import axiosInstance from "@/services/axiosInstance";
 import { ArboristNode } from "@/common/types";
 
-interface FileExplorerContextType {
+export interface FileExplorerContextType {
   selectedNode: ArboristNode | null;
   fileContent: string;
   selectNode: (node: ArboristNode | null) => void;
