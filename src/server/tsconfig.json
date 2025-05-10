@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  // "paths": {"@/*": ["src/*"]},
+  "compilerOptions": {
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "composite": true,
+    "rootDir": "./",
+    "outDir": "../../dist/",
+    "baseUrl": "./",
+    "declaration": true,
+    "sourceMap": true,
+    "noEmit": false,
+    "emitDeclarationOnly": false,
+    "removeComments": true,
+  },
+  "include": ["."]
+}

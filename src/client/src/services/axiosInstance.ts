@@ -9,14 +9,12 @@ if (!BACKEND_URI) {
 
 // Mi instancia base de Axios
 const axiosInstance = axios.create({
-  baseURL: BACKEND_URI,
+  baseURL: BACKEND_URI+"/api",
   timeout: MAX_TIME,
   headers: {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*", // CORS
   },
 });
-
-console.log("Backend URI:", BACKEND_URI);
 
 export default axiosInstance;

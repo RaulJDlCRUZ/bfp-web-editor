@@ -9,7 +9,7 @@ const BasicCompilePage: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-start pt-10">
       <div className="text-center">
-        <h1 className="text-6xl text-gray-700 font-bold">TFG Web Editor</h1>
+        <h1 className="text-6xl text-gray-700 font-bold">TFG Web Editor (Demo)</h1>
         <p className="text-gray-500 text-2xl mt-4">
           A simple web compiler for TFG documents
         </p>
@@ -23,14 +23,14 @@ const BasicCompilePage: React.FC = () => {
       {documentData && (
         <div className="mt-8 flex justify-center w-5/6">
           <object
-            data={`${BACKEND_URI}/servedoc`}
+            data={`${BACKEND_URI}/api/result`}
             type="application/pdf"
             width="100%"
             height="600px"
           >
             <p>
               Your browser does not support PDFs.{" "}
-              <a href={`${BACKEND_URI}/servedoc`}>
+              <a href={`${BACKEND_URI}/api/result`}>
                 <u>Download the PDF</u>
               </a>
               .

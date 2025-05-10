@@ -5,13 +5,15 @@ import "./index.css";
 import App from "./App";
 
 import BasicCompilePage from "./pages/BasicCompilePage";
+import CompilePagev2 from "./pages/CompilePagev2";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <App>
         <Routes>
-          <Route path="/" element={<BasicCompilePage />} />
+          <Route path="/" element={<CompilePagev2 />} />
+          <Route path="/legacy" element={<BasicCompilePage />} />
         </Routes>
       </App>
     </BrowserRouter>
