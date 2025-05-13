@@ -32,6 +32,7 @@ function getDirectoryTree(dirPath: string): any {
       .map((child) => getDirectoryTree(path.join(dirPath, child)));
     return {
       name,
+      path: "input/" + path.relative(folderPath, dirPath),
       nodetype: "directory",
       children,
     };
@@ -41,7 +42,7 @@ function getDirectoryTree(dirPath: string): any {
       nodetype: "file",
       size: stats.size,
       filetype: path.extname(name).slice(1), // Remove the dot
-      path: path.relative(folderPath, dirPath),
+      path: "input/" + path.relative(folderPath, dirPath),
     };
   }
 }

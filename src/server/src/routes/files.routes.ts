@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as filesController from "../controllers/files.controller.js";
 
-const filesRouter = Router();
+const filesRouter: Router = Router();
 
 filesRouter.get("/", filesController.getAllFiles);
 filesRouter.post("/upload", filesController.uploadFile);

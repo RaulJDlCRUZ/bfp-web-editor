@@ -1,11 +1,9 @@
 import {
-  TreeNode,
-  ArboristNode,
+  editableFiles,
   restrictedFiles,
   restrictedDirectories,
-  editableFiles,
-  FileItem,
-} from "@/common/types";
+} from "@/common/constants";
+import { TreeNode, ArboristNode, FileItem } from "@/common/types";
 
 function isRestricted(fid: string, node: TreeNode): boolean {
   // Check if the node is a file and if it is restricted
