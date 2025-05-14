@@ -24,7 +24,9 @@ export const FileExplorerProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!node || node.data.nodetype === "directory") return;
 
     try {
-      const response = await axiosInstance.get(`/files/${node.data.path}`);
+      const queryPath: string = node.data.path.split("input/")[1];
+      // const response = await axiosInstance.get(`/files/${node.data.path}`);
+      const response = await axiosInstance.get(`/files/${queryPath}`);
       if (!response) {
         throw new Error("Error fetching file content");
       }

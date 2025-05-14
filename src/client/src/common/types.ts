@@ -28,12 +28,14 @@ export interface ArboristNode {
 export interface tfgiiNode {
   id: string;
   name: string;
-  type: 'chapter' | 'appendix' | 'file';
+  type: 'directory' | 'file';
+  filetype: 'chapter' | 'appendix' | 'file';
   route: string;
-  order: number;
+  order: number | null; // Order is null for directories
+  restricted?: boolean;
   ignored?: boolean;
   edit?: boolean;
-  children?: tfgiiNode[];
+  children?: tfgiiNode[] | null; // Children exist only if type is 'directory'
 }
 
 // This dictionary maps file extensions to their corresponding icons

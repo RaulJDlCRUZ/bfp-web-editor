@@ -10,6 +10,7 @@ import {
   checkFileName,
 } from "@/services/fileOperations";
 import FileUploader from "./FileUploader";
+import DropDownMenu from "./DropDown";
 import { useFileExplorerContext } from "@/hooks/FileExplorerHook";
 
 function TreeComponent(): JSX.Element {
@@ -332,15 +333,18 @@ function TreeComponent(): JSX.Element {
                   🗑️
                 </button>
                 {node.isSelected && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deselectAll(e);
-                      setMovingNode(null);
-                    }}
-                  >
-                    ❌
-                  </button>
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deselectAll(e);
+                        setMovingNode(null);
+                      }}
+                    >
+                      ❌
+                    </button>
+                    <DropDownMenu></DropDownMenu>
+                  </>
                 )}
               </span>
               {treeitem.nodetype === "directory" &&
