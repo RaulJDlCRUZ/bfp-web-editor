@@ -74,12 +74,12 @@ export function renameFile(req: Request, res: Response) {
   const newFilename = req.body.newFilename;
   const oldFilePath = path.join(folderPath, oldFile);
   const newFilePath = path.join(folderPath, oldFile, "..", newFilename);
-
   // Check if the file exists
   fs.access(oldFilePath, fs.constants.F_OK, (err) => {
     if (err) {
       return res.status(404).json({ error: `File ${oldFile} not found` });
     }
+    // Rename the file
     fs.rename(oldFilePath, newFilePath, (err) => {
       if (err) {
         return res

@@ -2,6 +2,7 @@ import {
   editableFiles,
   restrictedFiles,
   restrictedDirectories,
+  allowNewDirectories,
 } from "@/common/constants";
 import { TreeNode, ArboristNode, FileItem } from "@/common/types";
 
@@ -21,6 +22,12 @@ function isEditable(fid: string, node: FileItem): boolean {
   return !!editableFiles[node.path] || !!editableFiles[fid];
 }
 
+function isAbleToCreateDirectory(fid: string, node: TreeNode): boolean {
+  // Check if the node is a directory and if it is allowed to create a new directory
+  if (node.nodetype !== "directory") return false;
+  return !!allowNewDirectories[fid];
+}
+
 // Función recursiva para transformar el árbol de backend a formato Arborist
 export function transformToArborist(
   node: TreeNode,
@@ -32,6 +39,7 @@ export function transformToArborist(
       id,
       name: node.name,
       restricted: isRestricted(id, node),
+      ableMkdir: isAbleToCreateDirectory(id, node),
       edit: false,
       children:
         node.children?.map((child) => transformToArborist(child, id)) ?? [],

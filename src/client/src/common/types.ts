@@ -20,6 +20,7 @@ export interface ArboristNode {
   id: string;
   name: string;
   restricted?: boolean;
+  ableMkdir?: boolean;
   edit?: boolean;
   children?: ArboristNode[];
   data: TreeNode;
@@ -61,4 +62,16 @@ export const fileIcons: { [extension: string]: string } = {
 // This interface is used to define the structure of the response from the server when compiling the document
 export interface CompileButtonProps {
   setDocumentData: (data: string | null) => void;
+}
+
+export interface DropDownOption {
+  operation: "download" | "delete" | "rename" | "move" | "info";
+  label: string;
+  icon: any;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
+export interface DropDownMenuProps {
+  options: DropDownOption[];
 }

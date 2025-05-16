@@ -1,17 +1,21 @@
 import React, { useEffect, useRef, useState, JSX } from "react";
-import axiosInstance from "@/services/axiosInstance";
+import { NodeApi, Tree, TreeApi } from "react-arborist";
 import { transformToArborist } from "@/services/treeConversion";
 import { fileIcons, ArboristNode } from "@/common/types";
-import { NodeApi, Tree, TreeApi } from "react-arborist";
+import { useFileExplorerContext } from "@/hooks/FileExplorerHook";
 import {
   createFile,
   downloadFile,
   deleteFile,
   checkFileName,
+  checkDirectoryName,
+  createDirectory,
+  renameFile,
+  fetchFiles,
+  moveFile,
 } from "@/services/fileOperations";
 import FileUploader from "./FileUploader";
 import DropDownMenu from "./DropDown";
-import { useFileExplorerContext } from "@/hooks/FileExplorerHook";
 
 function TreeComponent(): JSX.Element {
   const [treeData, setTreeData] = useState<ArboristNode[]>([]);
@@ -21,11 +25,8 @@ function TreeComponent(): JSX.Element {
 
   async function fetchTree(): Promise<void> {
     try {
-      const response = await axiosInstance.get("/files");
-      if (!response) {
-        throw new Error("Error al obtener el árbol");
-      }
-      const transformed = transformToArborist(response.data);
+      const data = await fetchFiles();
+      const transformed = transformToArborist(data);
       setTreeData([transformed]);
     } catch (error) {
       console.error("Error al cargar el árbol:", error);
@@ -46,13 +47,6 @@ function TreeComponent(): JSX.Element {
       const inputNode: ArboristNode = nodes[0].data;
       if (movingNode) {
         if (inputNode.data.nodetype !== "directory") return;
-        const dest = inputNode.id + "/" + movingNode.name;
-        if (movingNode.id === dest) {
-          alert("No puedes mover el archivo a la misma carpeta");
-          setMovingNode(null);
-          selectNode(null);
-          return;
-        }
         handleMoveFile(movingNode, inputNode);
         setMovingNode(null);
         selectNode(null);
@@ -68,22 +62,19 @@ function TreeComponent(): JSX.Element {
     origin: ArboristNode,
     destiny: ArboristNode
   ): Promise<void> {
+    const dest = destiny.data.path + "/" + origin.name;
+    if (origin.data.path === dest) {
+      alert("No puedes mover el archivo a la misma carpeta");
+      setMovingNode(null);
+      selectNode(null);
+      return;
+    }
     try {
-      const oldPath = origin.id.split("/input/")[1] || "./";
-      const newPath = destiny.id.split("/input/")[1] || "./";
-      await axiosInstance
-        .post("/files/move", {
-          oldPath: oldPath,
-          newPath: newPath,
-        })
-        .then(async () => {
-          alert(`Archivo movido a ${newPath}/${origin.name}`);
-          fetchTree();
-        })
-        .catch((err) => {
-          alert(`Error al mover el archivo`);
-          console.error(`Error al mover el archivo:`, err);
-        });
+      const oldPath = origin.data.path;
+      const newPath = destiny.data.path;
+      await moveFile(oldPath, newPath);
+      alert(`Archivo movido a ${newPath}/${origin.name}`);
+      await fetchTree();
     } catch (err) {
       alert(`Error al mover el archivo`);
       console.error(`Error al mover el archivo:`, err);
@@ -105,21 +96,12 @@ function TreeComponent(): JSX.Element {
     }
 
     try {
-      const file: string = nodeToRename.data.path;
+      const file: string = nodeToRename.data.path.split("input/")[1];
       const checkedName: string = checkFileName(String(newName));
-      axiosInstance
-        .put("/files/rename", {
-          oldFile: file,
-          newFilename: checkedName,
-        })
-        .then(async () => {
-          alert(`Archivo renombrado a ${newName}`);
-          fetchTree();
-        })
-        .catch((err) => {
-          alert(`Error al renombrar ${nodeToRename.name}`);
-          console.error(`Error al renombrar ${nodeToRename.name}:`, err);
-        });
+      await renameFile(file, checkedName);
+      alert(`Archivo ${nodeToRename.name} renombrado a ${checkedName}`);
+      selectNode(null);
+      await fetchTree();
     } catch (err) {
       alert(`Error al renombrar ${nodeToRename.name}`);
       console.error(`Error al renombrar ${nodeToRename.name}:`, err);
@@ -141,22 +123,25 @@ function TreeComponent(): JSX.Element {
     }
   }
 
-  async function handleDownload(filename: string): Promise<void> {
+  async function handleDownload(nodeToDownload: ArboristNode): Promise<void> {
+    const file = nodeToDownload.data.path;
+    const name = nodeToDownload.name;
     try {
-      const blob = await downloadFile(filename);
+      const filenamespt = file.split("input/")[1] || "./";
+      const blob = await downloadFile(filenamespt);
       // Crear un enlace temporal para descargar el archivo
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename;
+      a.download = name;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      alert(`Archivo ${filename} se descargará en breve`);
+      alert(`Archivo ${name} se descargará en breve`);
     } catch (err) {
-      alert(`Error al descargar ${filename}`);
-      console.error(`Error al descargar ${filename}:`, err);
+      alert(`Error al descargar ${name}`);
+      console.error(`Error al descargar ${name}:`, err);
     }
   }
 
@@ -175,25 +160,21 @@ function TreeComponent(): JSX.Element {
     }
   }
 
-  function handleCreateDirectory(): void {
-    const selectedNodeId = treeRef.current?.selectedNodes?.[0].id;
-    if (!selectedNodeId) return;
-    let path = selectedNodeId.split("/input")[0];
+  async function handleCreateDirectory(sourceDir: ArboristNode): Promise<void> {
+    const path = sourceDir.data.path.split("input/")[1] || "./";
     const dirName = window.prompt("Enter the name of the new directory:");
-    if (dirName && dirName.trim() !== "") {
-      try {
-        const checkedName = checkFileName(dirName);
-        alert(`Directory ${checkedName} created`);
-        axiosInstance.post("/files/mkdir", {
-          name: checkedName,
-          path: path,
-        });
-      } catch (err) {
-        alert(`Error al crear ${dirName}`);
-        console.error(`Error al crear ${dirName}:`, err);
-      } finally {
-        fetchTree();
-      }
+    if (!dirName || dirName.trim() === "") {
+      alert("Directory name cannot be empty");
+      return;
+    }
+    try {
+      const checkedName = checkDirectoryName(dirName);
+      await createDirectory(checkedName, path);
+      alert(`Directory ${checkedName} created successfully`);
+      await fetchTree();
+    } catch (err) {
+      alert(`Error al crear ${dirName}`);
+      console.error(`Error al crear ${dirName}:`, err);
     }
   }
 
@@ -201,13 +182,14 @@ function TreeComponent(): JSX.Element {
     if (nodeToDelete.restricted || nodeToDelete.data.nodetype === "directory")
       return;
     const filename = nodeToDelete.name;
-    const file = nodeToDelete.data.path;
+    const file = nodeToDelete.data.path.split("input/")[1] || "./";
     if (!window.confirm(`¿Está seguro de que desea eliminar ${filename}?`)) {
       return;
     }
     try {
       await deleteFile(file);
       alert(`Archivo ${filename} eliminado con éxito`);
+      selectNode(null);
       await fetchTree();
     } catch (err) {
       alert(`Error al eliminar ${filename}`);
@@ -247,6 +229,8 @@ function TreeComponent(): JSX.Element {
             <div
               style={{
                 ...style,
+                // fontFamily: "Arial, sans-serif",
+                fontSize: "14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -284,54 +268,53 @@ function TreeComponent(): JSX.Element {
                   : getIcon(arboristNode)}{" "}
                 {arboristNode.name}
               </span>
-              <span
-                style={{
-                  visibility:
-                    node.isSelected && !isRestricted && !movingNode
-                      ? "visible"
-                      : "hidden",
-                }}
-              >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(arboristNode.name);
-                  }}
-                >
-                  ⬇️
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRename(arboristNode);
-                  }}
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (arboristNode.data.nodetype === "file") {
-                      setMovingNode((prev) => {
-                        if (prev?.id !== arboristNode.id) {
-                          return arboristNode;
-                        }
-                        return prev;
-                      });
-                    }
-                  }}
-                >
-                  Ⓜ️
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(arboristNode);
-                  }}
-                  disabled={isRestricted}
-                >
-                  🗑️
-                </button>
+              <span>
+                {treeitem.nodetype === "directory" &&
+                  node.isSelected &&
+                  !movingNode &&
+                  arboristNode.ableMkdir && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCreateDirectory(arboristNode);
+                      }}
+                    >
+                      ➕📁
+                    </button>
+                  )}
+                {
+                  // TODO: Replace 01 Logic to detect, using a queue, if 1st chapter or appendix
+                  treeitem.nodetype === "file" &&
+                    node.isSelected &&
+                    !treeitem.name.includes("01") &&
+                    (treeitem.path.includes("chapters") ||
+                      treeitem.path.includes("appendices")) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          alert(`Subir capítulo ${treeitem.name}`);
+                        }}
+                      >
+                        🔺
+                      </button>
+                    )
+                }
+                {
+                  // TODO: Replace 01 Logic to detect, using a queue, if last chapter or appendix
+                  treeitem.nodetype === "file" &&
+                    node.isSelected &&
+                    (treeitem.path.includes("chapters") ||
+                      treeitem.path.includes("appendices")) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          alert(`Bajar capítulo ${treeitem.name}`);
+                        }}
+                      >
+                        🔻
+                      </button>
+                    )
+                }
                 {node.isSelected && (
                   <>
                     <button
@@ -343,22 +326,52 @@ function TreeComponent(): JSX.Element {
                     >
                       ❌
                     </button>
-                    <DropDownMenu></DropDownMenu>
+                    <DropDownMenu
+                      options={[
+                        {
+                          operation: "download",
+                          label: "Download",
+                          icon: "⬇️",
+                          onClick: () => handleDownload(arboristNode),
+                        },
+                        {
+                          operation: "rename",
+                          label: "Rename",
+                          icon: "✏️",
+                          disabled:
+                            node.isSelected && !isRestricted && !movingNode,
+                          onClick: () => handleRename(arboristNode),
+                        },
+                        {
+                          operation: "move",
+                          label: "Move",
+                          icon: "Ⓜ️",
+                          disabled:
+                            node.isSelected && !isRestricted && !movingNode,
+                          onClick: () => {
+                            if (arboristNode.data.nodetype === "file") {
+                              setMovingNode((prev) => {
+                                if (prev?.id !== arboristNode.id) {
+                                  return arboristNode;
+                                }
+                                return prev;
+                              });
+                            }
+                          },
+                        },
+                        {
+                          operation: "delete",
+                          label: "Delete",
+                          icon: "🗑️",
+                          disabled:
+                            node.isSelected && !isRestricted && !movingNode,
+                          onClick: () => handleDelete(arboristNode),
+                        },
+                      ]}
+                    />
                   </>
                 )}
               </span>
-              {treeitem.nodetype === "directory" &&
-                node.isSelected &&
-                !movingNode && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCreateDirectory();
-                    }}
-                  >
-                    ➕📁
-                  </button>
-                )}
             </div>
           );
         }}

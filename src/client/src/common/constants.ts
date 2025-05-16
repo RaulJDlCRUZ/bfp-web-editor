@@ -37,6 +37,10 @@ export const restrictedDirectories: { [directory: string]: boolean } = {
 "/input/resources/images": true, // Not their content
 };
 
+export const allowNewDirectories: { [directory: string]: boolean } = {
+  "/input/resources/images": true,
+};
+
 // CSL files that are not shown in the file explorer
 export const hideCSL: { [extension: string]: boolean } = {
   "/input/resources/csl/acm-sig-proceedings.csl": true,
