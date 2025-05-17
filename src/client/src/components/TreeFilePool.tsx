@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState, JSX } from "react";
 import { NodeApi, Tree, TreeApi } from "react-arborist";
-import { transformToArborist } from "@/services/treeConversion";
-import { fileIcons, ArboristNode } from "@/common/types";
+import { ArboristNode } from "@/common/types";
+import { fileIcons } from "@/common/constants";
 import { useFileExplorerContext } from "@/hooks/FileExplorerHook";
+import { transformToArborist } from "@/services/treeConversion";
 import {
   createFile,
   downloadFile,
   deleteFile,
-  checkFileName,
-  checkDirectoryName,
   createDirectory,
   renameFile,
   fetchFiles,
@@ -46,7 +45,7 @@ function TreeComponent(): JSX.Element {
     if (nodes.length > 0) {
       const inputNode: ArboristNode = nodes[0].data;
       if (movingNode) {
-        if (inputNode.data.nodetype !== "directory") return;
+        if (inputNode.metadata.nodetype !== "directory") return;
         handleMoveFile(movingNode, inputNode);
         setMovingNode(null);
         selectNode(null);
@@ -62,16 +61,16 @@ function TreeComponent(): JSX.Element {
     origin: ArboristNode,
     destiny: ArboristNode
   ): Promise<void> {
-    const dest = destiny.data.path + "/" + origin.name;
-    if (origin.data.path === dest) {
+    const dest = destiny.metadata.path + "/" + origin.name;
+    if (origin.metadata.path === dest) {
       alert("No puedes mover el archivo a la misma carpeta");
       setMovingNode(null);
       selectNode(null);
       return;
     }
     try {
-      const oldPath = origin.data.path;
-      const newPath = destiny.data.path;
+      const oldPath = origin.metadata.path;
+      const newPath = destiny.metadata.path;
       await moveFile(oldPath, newPath);
       alert(`Archivo movido a ${newPath}/${origin.name}`);
       await fetchTree();
@@ -83,7 +82,10 @@ function TreeComponent(): JSX.Element {
 
   async function handleRename(nodeToRename: ArboristNode): Promise<void> {
     // TODO: add rename support for directories
-    if (nodeToRename.restricted || nodeToRename.data.nodetype === "directory")
+    if (
+      nodeToRename.restricted ||
+      nodeToRename.metadata.nodetype === "directory"
+    )
       return;
 
     const newName = window.prompt(
@@ -96,10 +98,9 @@ function TreeComponent(): JSX.Element {
     }
 
     try {
-      const file: string = nodeToRename.data.path.split("input/")[1];
-      const checkedName: string = checkFileName(String(newName));
-      await renameFile(file, checkedName);
-      alert(`Archivo ${nodeToRename.name} renombrado a ${checkedName}`);
+      const file: string = nodeToRename.metadata.path;
+      await renameFile(file, newName);
+      alert(`Archivo ${nodeToRename.name} renombrado a ${newName}`);
       selectNode(null);
       await fetchTree();
     } catch (err) {
@@ -118,17 +119,16 @@ function TreeComponent(): JSX.Element {
   }
 
   function getIcon(node: ArboristNode): any {
-    if (node.data.nodetype === "file") {
-      return fileIcons[node.data.filetype] || "📄";
+    if (node.metadata.nodetype === "file") {
+      return fileIcons[node.metadata.filetype] || "📄";
     }
   }
 
   async function handleDownload(nodeToDownload: ArboristNode): Promise<void> {
-    const file = nodeToDownload.data.path;
+    const file = nodeToDownload.metadata.path;
     const name = nodeToDownload.name;
     try {
-      const filenamespt = file.split("input/")[1] || "./";
-      const blob = await downloadFile(filenamespt);
+      const blob = await downloadFile(file);
       // Crear un enlace temporal para descargar el archivo
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -146,9 +146,9 @@ function TreeComponent(): JSX.Element {
   }
 
   async function handleCreate(): Promise<void> {
-    const filename = checkFileName(
-      (document.getElementById("filename") as HTMLInputElement).value
-    );
+    const filename: string = (
+      document.getElementById("filename") as HTMLInputElement
+    ).value;
     try {
       const result = await createFile(filename);
       console.log(result);
@@ -161,16 +161,15 @@ function TreeComponent(): JSX.Element {
   }
 
   async function handleCreateDirectory(sourceDir: ArboristNode): Promise<void> {
-    const path = sourceDir.data.path.split("input/")[1] || "./";
     const dirName = window.prompt("Enter the name of the new directory:");
     if (!dirName || dirName.trim() === "") {
       alert("Directory name cannot be empty");
       return;
     }
     try {
-      const checkedName = checkDirectoryName(dirName);
-      await createDirectory(checkedName, path);
-      alert(`Directory ${checkedName} created successfully`);
+      const path = sourceDir.metadata.path;
+      await createDirectory(dirName, path);
+      alert(`Directory ${dirName} created successfully`);
       await fetchTree();
     } catch (err) {
       alert(`Error al crear ${dirName}`);
@@ -179,10 +178,13 @@ function TreeComponent(): JSX.Element {
   }
 
   async function handleDelete(nodeToDelete: ArboristNode): Promise<void> {
-    if (nodeToDelete.restricted || nodeToDelete.data.nodetype === "directory")
+    if (
+      nodeToDelete.restricted ||
+      nodeToDelete.metadata.nodetype === "directory"
+    )
       return;
     const filename = nodeToDelete.name;
-    const file = nodeToDelete.data.path.split("input/")[1] || "./";
+    const file = nodeToDelete.metadata.path;
     if (!window.confirm(`¿Está seguro de que desea eliminar ${filename}?`)) {
       return;
     }
@@ -224,7 +226,7 @@ function TreeComponent(): JSX.Element {
           const arboristNode = node.data as ArboristNode;
           const isRestricted = arboristNode.restricted;
           const isEditable = arboristNode.edit;
-          const treeitem = arboristNode.data;
+          const treeitem = arboristNode.metadata;
           return (
             <div
               style={{
@@ -349,7 +351,7 @@ function TreeComponent(): JSX.Element {
                           disabled:
                             node.isSelected && !isRestricted && !movingNode,
                           onClick: () => {
-                            if (arboristNode.data.nodetype === "file") {
+                            if (arboristNode.metadata.nodetype === "file") {
                               setMovingNode((prev) => {
                                 if (prev?.id !== arboristNode.id) {
                                   return arboristNode;
@@ -366,6 +368,14 @@ function TreeComponent(): JSX.Element {
                           disabled:
                             node.isSelected && !isRestricted && !movingNode,
                           onClick: () => handleDelete(arboristNode),
+                        },
+                        {
+                          operation: "info",
+                          label: "Info",
+                          icon: "ℹ️",
+                          disabled:
+                            node.isSelected && treeitem.nodetype === "file",
+                          onClick: () => {},
                         },
                       ]}
                     />

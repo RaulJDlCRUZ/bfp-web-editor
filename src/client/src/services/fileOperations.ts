@@ -36,11 +36,12 @@ export async function fetchFiles(): Promise<any> {
 }
 
 export async function renameFile(file: string, newName: string): Promise<void> {
-  console.log(`Renombrando ${file} a ${newName} en el servidor...`);
   try {
+    const checkedName: string = checkFileName(String(newName));
+    const trimFile = file.split("input/")[1];
     const response = await axiosInstance.put("/files/rename", {
-      oldFile: file,
-      newFilename: newName,
+      oldFile: trimFile,
+      newFilename: checkedName,
     });
     console.log(`Archivo ${file} renombrado a ${newName}`, response.data);
   } catch (err) {
@@ -67,7 +68,8 @@ export async function uploadFile(file: File): Promise<void> {
 
 export async function createFile(filename: string): Promise<void> {
   try {
-    const response = await axiosInstance.post(`/files/${filename}`);
+    const checkedFileName: string = checkFileName(String(filename));
+    const response = await axiosInstance.post(`/files/${checkedFileName}`);
     if (!response.data || !response.data.success) {
       throw new Error("Error al crear el archivo");
     }
@@ -83,9 +85,11 @@ export async function createDirectory(
   destPath: string
 ): Promise<void> {
   try {
+    const checkedDirName: string = checkDirectoryName(String(newDirName));
+    const trimPath = destPath.split("input/")[1] || "./";
     const response = await axiosInstance.post("/files/mkdir", {
-      name: newDirName,
-      path: destPath,
+      name: checkedDirName,
+      path: trimPath,
     });
     if (!response.data || !response.data.success) {
       throw new Error("Error al crear el archivo");
@@ -99,7 +103,8 @@ export async function createDirectory(
 
 export async function downloadFile(filename: string): Promise<Blob> {
   try {
-    const response = await axiosInstance.get(`/files/${filename}`, {
+    const trimFile = filename.split("input/")[1] || "./";
+    const response = await axiosInstance.get(`/files/${trimFile}`, {
       responseType: "blob", // Importante para descargar archivos binarios
     });
     if (!response.data) {
@@ -112,7 +117,10 @@ export async function downloadFile(filename: string): Promise<Blob> {
   }
 }
 
-export async function moveFile(oldFilePath: string, newFilePath: string): Promise<void> {
+export async function moveFile(
+  oldFilePath: string,
+  newFilePath: string
+): Promise<void> {
   try {
     const response = await axiosInstance.post("/files/move", {
       oldPath: oldFilePath.split("input/")[1] || "./",
@@ -130,7 +138,8 @@ export async function moveFile(oldFilePath: string, newFilePath: string): Promis
 
 export async function deleteFile(filename: string): Promise<void> {
   try {
-    await axiosInstance.delete(`/files/${filename}`);
+    const trimFile = filename.split("input/")[1] || "./";
+    await axiosInstance.delete(`/files/${trimFile}`);
   } catch (error) {
     console.error(`Error al eliminar archivo ${filename}:`, error);
     throw error;

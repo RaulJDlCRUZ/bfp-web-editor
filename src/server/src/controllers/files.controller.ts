@@ -22,14 +22,14 @@ const upload = multer({
 }).single("file");
 
 /* Función recursiva para construir el árbol de directorios */
-function getDirectoryTree(dirPath: string): any {
+function makeDirectoryTree(dirPath: string): any {
   const stats = fs.statSync(dirPath);
   const name = path.basename(dirPath);
 
   if (stats.isDirectory()) {
     const children = fs
       .readdirSync(dirPath)
-      .map((child) => getDirectoryTree(path.join(dirPath, child)));
+      .map((child) => makeDirectoryTree(path.join(dirPath, child)));
     return {
       name,
       path: "input/" + path.relative(folderPath, dirPath),
@@ -39,17 +39,17 @@ function getDirectoryTree(dirPath: string): any {
   } else {
     return {
       name,
-      nodetype: "file",
-      size: stats.size,
-      filetype: path.extname(name).slice(1), // Remove the dot
       path: "input/" + path.relative(folderPath, dirPath),
+      nodetype: "file",
+      filetype: path.extname(name).slice(1), // Remove the dot
+      size: stats.size,
     };
   }
 }
 
 export function getAllFiles(req: Request, res: Response) {
   try {
-    res.json(getDirectoryTree(folderPath));
+    res.json(makeDirectoryTree(folderPath));
   } catch (err) {
     res.status(500).json({ error: "Error reading directory:\n", err });
   }

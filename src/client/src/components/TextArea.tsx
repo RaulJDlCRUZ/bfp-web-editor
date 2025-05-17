@@ -28,13 +28,18 @@ function TextArea(): JSX.Element {
   }, [fileContent]);
 
   return (
-    <div className="flex flex-col items-center justify-start">
-      <div className="resize-none md:resize w-11/12 h-96">
+    <div className="flex flex-col items-center justify-start h-full">
+      <div
+        style={{ height: "400px" }} // Same as FileTree
+        className="resize-none md:resize w-11/12"
+      >
         <textarea
           className="w-full h-full p-3 border border-gray-300 rounded-none resize-none font-mono focus:outline-none focus:ring-1 focus:ring-gray-900"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          disabled={!selectedNode}
+          disabled={
+            !selectedNode || selectedNode.metadata.nodetype === "directory"
+          }
           placeholder={selectedNode ? "" : "Select a file to start working"}
         ></textarea>
       </div>
@@ -44,13 +49,17 @@ function TextArea(): JSX.Element {
             className="px-4 py-2 text-s font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-sm select-none hover:bg-gray-900/10 active:bg-gray-900/20 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
             type="button"
             onClick={handleCancel}
-            disabled={!selectedNode}
+            disabled={
+              !selectedNode || selectedNode.metadata.nodetype === "directory"
+            }
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            disabled={!selectedNode}
+            disabled={
+              !selectedNode || selectedNode.metadata.nodetype === "directory"
+            }
             className="select-none rounded-sm bg-gray-900 py-2 px-4 text-center align-middle text-s font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
             type="button"
           >

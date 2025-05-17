@@ -1,7 +1,4 @@
 /*
-
-// WIP. Commented to avoid breaking the build
-
 import {
   editableFiles,
   restrictedFiles,
@@ -29,8 +26,7 @@ function extractOrder(filename: string): number {
   return order;
 }
 
-
-export function transformNewNode(
+export function transformTreeTFGII(
   node: TreeNode,
   basePath = ""
 ): tfgiiNode | null {
@@ -69,15 +65,14 @@ export function transformNewNode(
     .map((child) => transformNewNode(child, basePath))
     .filter((child): child is tfgiiNode => child !== null)
     : [],
-      };
-    }
-  }
-  
-  if (node.nodetype === "file") {
-    if (hideCSL[node.path]) {
-      return null; // Skip this node
-    }
-  }
+  };
+}
 }
 
+if (node.nodetype === "file") {
+  if (hideCSL[node.path]) {
+    return null; // Skip this node
+  }
+}
+}
 */
