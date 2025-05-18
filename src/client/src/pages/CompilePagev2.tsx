@@ -13,7 +13,7 @@ const NextCompilePage: React.FC = () => {
     <FileExplorerProvider>
       <div className="flex flex-col items-center justify-start">
         <div className="flex w-full">
-          <div className="text-left w-1/3">
+          <div className="text-left w-2/5">
             <div className="mt-8 h-2/8">
               <Suspense
                 fallback={
@@ -28,7 +28,7 @@ const NextCompilePage: React.FC = () => {
               </Suspense>
             </div>
           </div>
-          <div className="text-right w-2/3">
+          <div className="text-right w-3/5">
             <div className="mt-8 h-2/8">
               <TextArea />
             </div>

@@ -268,7 +268,10 @@ function TreeComponent(): JSX.Element {
                 {treeitem.nodetype === "directory"
                   ? "📁"
                   : getIcon(arboristNode)}{" "}
-                {arboristNode.name}
+                {arboristNode.order ? arboristNode.order + ") " : ""}
+                {arboristNode.nodename
+                  ? arboristNode.nodename
+                  : arboristNode.name}
               </span>
               <span>
                 {treeitem.nodetype === "directory" &&

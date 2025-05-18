@@ -21,6 +21,38 @@ const upload = multer({
   },
 }).single("file");
 
+/*
+Obtiene el nombre real de un capítulo o anexo.
+Cuando la base de datos esté instalada, es posible que se mueva/elimine esta función
+*/
+function getFriendlyName(filedata: any): string {
+  const begin_html_comment = "<!--";
+  const end_html_comment = "-->";
+  const chapter_wildcard = "# ";
+
+  const lines = filedata.split("\n");
+  let isCommented = false;
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    if (trimmedLine.startsWith(begin_html_comment)) {
+      isCommented = true;
+    }
+
+    if (trimmedLine.endsWith(end_html_comment)) {
+      isCommented = false;
+      continue;
+    }
+
+    if (!isCommented && trimmedLine.startsWith(chapter_wildcard)) {
+      const chapterName = trimmedLine.slice(chapter_wildcard.length).trim();
+      return chapterName;
+    }
+  }
+  return "";
+}
+
 /* Función recursiva para construir el árbol de directorios */
 function makeDirectoryTree(dirPath: string): any {
   const stats = fs.statSync(dirPath);
@@ -37,12 +69,22 @@ function makeDirectoryTree(dirPath: string): any {
       children,
     };
   } else {
+    let friendlyName = "";
+    if (
+      dirPath.includes("chapters") ||
+      (dirPath.includes("appendices") && dirPath.endsWith(".md"))
+    ) {
+      // Only reading chapters or appendices
+      const filedata = fs.readFileSync(dirPath, "utf8");
+      friendlyName = getFriendlyName(filedata);
+    }
     return {
       name,
       path: "input/" + path.relative(folderPath, dirPath),
       nodetype: "file",
       filetype: path.extname(name).slice(1), // Remove the dot
       size: stats.size,
+      friendlyname: friendlyName,
     };
   }
 }

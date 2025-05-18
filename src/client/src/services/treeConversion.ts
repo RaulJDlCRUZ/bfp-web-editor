@@ -3,15 +3,30 @@ import {
   restrictedFiles,
   restrictedDirectories,
   allowNewDirectories,
-  hideCSL,
-  hideDirectories,
+  prettySetupFiles,
+  // hideCSL,
+  // hideDirectories,
 } from "@/common/constants";
 
-import { TreeNode, ArboristNode, FileItem } from "@/common/types";
+import { TreeNode, ArboristNode } from "@/common/types";
+// import axiosInstance from "./axiosInstance";
 
 function getType(nodePath: string): "chapter" | "appendix" | "setup" | "other" {
-  if (nodePath.includes("appendices")) return "appendix";
-  if (nodePath.includes("chapters")) return "chapter";
+  // Nos aseguramos que el número de ocurrencias de "/" sea 2, para evitar que se cuelen archivos de subcarpetas (length es 3 si hay 2 "/")
+  const slashCount = nodePath.split("/").length - 1;
+
+  if (
+    nodePath.includes("appendices") &&
+    slashCount === 2 &&
+    nodePath.endsWith(".md")
+  )
+    return "appendix";
+  if (
+    nodePath.includes("chapters") &&
+    slashCount === 2 &&
+    nodePath.endsWith(".md")
+  )
+    return "chapter";
   return "other";
 }
 
@@ -20,65 +35,71 @@ function extractOrder(filename: string): number {
   if (slice === "XX") return 0;
   const order: number = parseInt(slice, 10);
   if (isNaN(order)) return 0;
+  // console.log("ORDER->", filename, slice, order);
   return order;
 }
 
-function isRestricted(fid: string, node: TreeNode): boolean {
+function isRestricted(type: string, nodePath: string): boolean {
   // Check if the node is a file and if it is restricted
-  if (node.nodetype === "file") {
-    return !!restrictedFiles[node.path] || !!restrictedFiles[fid];
+  if (type === "file") {
+    return !!restrictedFiles[nodePath];
   }
   // Same for directories
-  if (node.nodetype === "directory") {
-    return !!restrictedDirectories[fid];
+  if (type === "directory") {
+    return !!restrictedDirectories[nodePath];
   }
   return false;
 }
 
 function isEditable(nodePath: string): boolean {
-  // return !!editableFiles[node.path] || !!editableFiles[fid];
-  // return node.path in editableFiles || fid in editableFiles;
-  // return !!editableFiles[nodePath];
   return nodePath in editableFiles;
 }
 
-function isAbleToCreateDirectory(fid: string, node: TreeNode): boolean {
+function isAbleToCreateDirectory(type: string, nodePath: string): boolean {
   // Check if the node is a directory and if it is allowed to create a new directory
-  if (node.nodetype !== "directory") return false;
-  return !!allowNewDirectories[fid];
+  if (type !== "directory") return false;
+  return (
+    nodePath in allowNewDirectories || !(nodePath in restrictedDirectories)
+  );
 }
 
 // Función recursiva para transformar el árbol de backend a formato Arborist
 export function transformToArborist(
-  node: TreeNode,
-  basePath = ""
+  node: TreeNode | any, // Me permite usar TreeNode y, si procede, campos adicionales
+  basePath: string = ""
 ): ArboristNode {
   const id = `${basePath}/${node.name}`;
-  if (node.nodetype === "directory") {
+  const nodePath = node.path;
+  const nodeType = node.nodetype;
+  if (nodeType === "directory") {
     return {
       id,
       name: node.name,
       nodename: node.name,
       nodetype: "directory",
       order: null,
-      restricted: isRestricted(id, node),
-      ableMkdir: isAbleToCreateDirectory(id, node),
+      restricted: isRestricted(nodeType, nodePath),
+      ableMkdir: isAbleToCreateDirectory(nodeType, nodePath),
       edit: false,
       children:
-        node.children?.map((child) => transformToArborist(child, id)) ?? [],
+        node.children?.map((child: TreeNode | any) =>
+          transformToArborist(child, id)
+        ) ?? [],
       metadata: node,
     };
   }
   // It's a file, so we need to check first if it's a setup file
-  const nodePath = node.path;
   const editable = isEditable(nodePath);
+  const nodetype = editable ? "setup" : getType(nodePath);
   return {
     id,
     name: node.name,
-    nodename: node.name,
-    nodetype: editable ? "setup" : getType(nodePath),
-    order: extractOrder(node.name),
-    restricted: isRestricted(id, node),
+    nodename: nodetype.includes("setup") ? prettySetupFiles[nodePath] : node.friendlyname,
+    nodetype: nodetype,
+    order: ["chapter", "appendix"].includes(nodetype)
+      ? extractOrder(node.name)
+      : null,
+    restricted: isRestricted(nodeType, nodePath),
     edit: editable,
     metadata: node,
   };
