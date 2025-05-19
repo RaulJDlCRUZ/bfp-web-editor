@@ -18,6 +18,16 @@ export const fileIcons: { [extension: string]: string } = {
   json: "🗃️",
 };
 
+// For every admitted image extension, maps its corresponding render type (Tailwind CSS)
+export const imageExtensions: { [extension: string]: string } = {
+  "jpg": "image-render-auto",
+  "jpeg": "image-render-auto",
+  "png": "image-render-pixel",
+  "gif": "image-render-auto",
+  "svg": "image-render-auto",
+  "bmp": "image-render-crisp",
+}
+
 // This dictionary specifies which files are restricted but can be edited
 // According to: https://www.felixalbertos.com/resources/downloads/tfg_template.html
 export const editableFiles: { [extension: string]: boolean } = {
@@ -63,16 +73,16 @@ export const allowNewDirectories: { [directory: string]: boolean } = {
 
 // CSL files that are not shown in the file explorer
 export const hideCSL: { [extension: string]: boolean } = {
-  "/input/resources/csl/acm-sig-proceedings.csl": true,
-  "/input/resources/csl/iso690-author-date-cs.csl": true,
-  "/input/resources/csl/iso690-numeric-en.csl": true,
+  "input/resources/csl/acm-sig-proceedings.csl": true,
+  "input/resources/csl/iso690-author-date-cs.csl": true,
+  "input/resources/csl/iso690-numeric-en.csl": true,
 };
 
 // Directories that are not shown in the file explorer
 export const hideDirectories: { [directory: string]: boolean } = {
-  "/input/": true,
-  "/input/resources/bibliography": true,
-  "/input/resources/csl": true,
+  "input/": true,
+  "input/resources/bibliography": true,
+  "input/resources/csl": true,
 };
 
 // ! Probablemennte sea movido o eliminado al implementarse la BD

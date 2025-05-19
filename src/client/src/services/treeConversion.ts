@@ -30,15 +30,6 @@ function getType(nodePath: string): "chapter" | "appendix" | "setup" | "other" {
   return "other";
 }
 
-function extractOrder(filename: string): number {
-  const slice: string = filename.slice(0, 2);
-  if (slice === "XX") return 0;
-  const order: number = parseInt(slice, 10);
-  if (isNaN(order)) return 0;
-  // console.log("ORDER->", filename, slice, order);
-  return order;
-}
-
 function isRestricted(type: string, nodePath: string): boolean {
   // Check if the node is a file and if it is restricted
   if (type === "file") {
@@ -96,9 +87,7 @@ export function transformToArborist(
     name: node.name,
     nodename: nodetype.includes("setup") ? prettySetupFiles[nodePath] : node.friendlyname,
     nodetype: nodetype,
-    order: ["chapter", "appendix"].includes(nodetype)
-      ? extractOrder(node.name)
-      : null,
+    order: node.order ?? null,
     restricted: isRestricted(nodeType, nodePath),
     edit: editable,
     metadata: node,

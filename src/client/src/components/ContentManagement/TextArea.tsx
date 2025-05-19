@@ -22,10 +22,18 @@ function TextArea(): JSX.Element {
   }
 
   useEffect(() => {
-    if (fileContent !== undefined) {
-      setContent(fileContent);
+    if (
+      selectedNode &&
+      selectedNode.metadata.nodetype !== "directory" &&
+      selectedNode.metadata.filetype !== "pdf"
+    ) {
+      setContent(fileContent || "");
+    } else if (selectedNode?.metadata.name.endsWith("pdf")) {
+      setContent(
+        "Por motivos de rendimiento, no es posible visualizar ni editar archivos PDF. Por favor, descargue el archivo para editarlo."
+      );
     }
-  }, [fileContent]);
+  }, [fileContent, selectedNode]);
 
   return (
     <div className="flex flex-col items-center justify-start h-full">
@@ -38,7 +46,9 @@ function TextArea(): JSX.Element {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           disabled={
-            !selectedNode || selectedNode.metadata.nodetype === "directory"
+            !selectedNode ||
+            selectedNode.metadata.nodetype === "directory" ||
+            selectedNode.metadata.filetype === "pdf"
           }
           placeholder={selectedNode ? "" : "Select a file to start working"}
         ></textarea>
@@ -50,7 +60,9 @@ function TextArea(): JSX.Element {
             type="button"
             onClick={handleCancel}
             disabled={
-              !selectedNode || selectedNode.metadata.nodetype === "directory"
+              !selectedNode ||
+              selectedNode.metadata.nodetype === "directory" ||
+              selectedNode.metadata.filetype === "pdf"
             }
           >
             Cancel
@@ -58,7 +70,9 @@ function TextArea(): JSX.Element {
           <button
             onClick={handleSave}
             disabled={
-              !selectedNode || selectedNode.metadata.nodetype === "directory"
+              !selectedNode ||
+              selectedNode.metadata.nodetype === "directory" ||
+              selectedNode.metadata.filetype === "pdf"
             }
             className="select-none rounded-sm bg-gray-900 py-2 px-4 text-center align-middle text-s font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
             type="button"

@@ -39,6 +39,12 @@ app.use("/input", express.static(folderPath));
 // Serve result from a specific directory
 app.use("/output", express.static(outputPath));
 
+// Serve input images from its directory
+app.use(
+  "/images",
+  express.static(path.join(folderPath, "resources", "images"))
+);
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(clientPath, "index.html"));
 });

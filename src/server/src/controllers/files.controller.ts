@@ -21,6 +21,15 @@ const upload = multer({
   },
 }).single("file");
 
+function extractOrder(filename: string): number {
+  const slice: string = filename.slice(0, 2);
+  if (slice === "XX") return 0;
+  const order: number = parseInt(slice, 10);
+  if (isNaN(order)) return 0;
+  // console.log("ORDER->", filename, slice, order);
+  return order;
+}
+
 /*
 Obtiene el nombre real de un capítulo o anexo.
 Cuando la base de datos esté instalada, es posible que se mueva/elimine esta función
@@ -69,7 +78,8 @@ function makeDirectoryTree(dirPath: string): any {
       children,
     };
   } else {
-    let friendlyName = "";
+    let friendlyName = null;
+    let priorityOrder = null;
     if (
       dirPath.includes("chapters") ||
       (dirPath.includes("appendices") && dirPath.endsWith(".md"))
@@ -77,6 +87,7 @@ function makeDirectoryTree(dirPath: string): any {
       // Only reading chapters or appendices
       const filedata = fs.readFileSync(dirPath, "utf8");
       friendlyName = getFriendlyName(filedata);
+      priorityOrder = extractOrder(name);
     }
     return {
       name,
@@ -85,6 +96,7 @@ function makeDirectoryTree(dirPath: string): any {
       filetype: path.extname(name).slice(1), // Remove the dot
       size: stats.size,
       friendlyname: friendlyName,
+      order: priorityOrder
     };
   }
 }

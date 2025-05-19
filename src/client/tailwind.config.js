@@ -1,12 +1,16 @@
 module.exports = {
-  content: [
-    './index.html',
-    './src/**/*.{js,jsx,ts,tsx}',
-  ],
+  content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "Avenir", "Helvetica", "Arial", "sans-serif"],
+        sans: [
+          "Inter",
+          "system-ui",
+          "Avenir",
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+        ],
       },
       colors: {
         light: "#ffffff",
@@ -16,5 +20,11 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  variants: {
+    // all the following default to ['responsive']
+    imageRendering: ["responsive"],
+  },
+  plugins: [
+    require("tailwindcss-image-rendering")(), // no options to configure
+  ],
 };

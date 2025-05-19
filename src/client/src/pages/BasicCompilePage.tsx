@@ -23,14 +23,14 @@ const BasicCompilePage: React.FC = () => {
       {documentData && (
         <div className="mt-8 flex justify-center w-5/6">
           <object
-            data={`${BACKEND_URI}/api/result`}
+            data={`${BACKEND_URI}/result`}
             type="application/pdf"
             width="100%"
             height="600px"
           >
             <p>
               Your browser does not support PDFs.{" "}
-              <a href={`${BACKEND_URI}/api/result`}>
+              <a href={`${BACKEND_URI}/result`}>
                 <u>Download the PDF</u>
               </a>
               .

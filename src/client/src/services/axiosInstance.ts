@@ -9,7 +9,7 @@ if (!BACKEND_URI) {
 
 // Mi instancia base de Axios
 const axiosInstance = axios.create({
-  baseURL: BACKEND_URI+"/api",
+  baseURL: BACKEND_URI,
   timeout: MAX_TIME,
   headers: {
     "Content-Type": "application/json",

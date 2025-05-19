@@ -21,7 +21,12 @@ export const FileExplorerProvider: React.FC<{ children: React.ReactNode }> = ({
   const [fileContent, setFileContent] = useState<string>("");
 
   async function fetchFileContent(node: ArboristNode): Promise<void> {
-    if (!node || node.metadata.nodetype === "directory") return;
+    if (
+      !node ||
+      node.metadata.nodetype === "directory" ||
+      node.metadata.filetype === "pdf"
+    )
+      return;
 
     try {
       const queryPath: string = node.metadata.path.split("input/")[1];
@@ -40,7 +45,7 @@ export const FileExplorerProvider: React.FC<{ children: React.ReactNode }> = ({
 
   async function saveFile(newContent: string): Promise<void> {
     if (!selectedNode || selectedNode.metadata.nodetype === "directory") return;
-    
+
     try {
       const queryPath: string = selectedNode.metadata.path.split("input/")[1];
       await axiosInstance.patch(`/files/${queryPath}`, {
