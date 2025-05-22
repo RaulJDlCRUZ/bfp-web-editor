@@ -54,6 +54,8 @@ function isAbleToCreateDirectory(type: string, nodePath: string): boolean {
   );
 }
 
+// otra func, sobre transformToArborist <--- SEA LA QUE SE VEA EN EL CLIENTE
+
 // Función recursiva para transformar el árbol de backend a formato Arborist
 export function transformToArborist(
   node: TreeNode | any, // Me permite usar TreeNode y, si procede, campos adicionales

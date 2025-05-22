@@ -145,3 +145,9 @@ export async function deleteFile(filename: string): Promise<void> {
     throw error;
   }
 }
+
+export function upElement(): void {
+  // TODO:
+}
+
+// TODO: Remove Directory

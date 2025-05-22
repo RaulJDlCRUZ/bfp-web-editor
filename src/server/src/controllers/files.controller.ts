@@ -27,7 +27,7 @@ function extractOrder(filename: string): number {
   const order: number = parseInt(slice, 10);
   if (isNaN(order)) return 0;
   // console.log("ORDER->", filename, slice, order);
-  return order;
+  return (10 * order);
 }
 
 /*

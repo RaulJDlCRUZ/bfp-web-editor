@@ -15,6 +15,7 @@ import {
 } from "@/services/fileOperations";
 import FileUploader from "./FileUploader";
 import DropDownMenu from "./DropDown";
+import Tooltip from "./Tooltips/Tooltip";
 
 function TreeComponent(): JSX.Element {
   const [treeData, setTreeData] = useState<ArboristNode[]>([]);
@@ -55,6 +56,78 @@ function TreeComponent(): JSX.Element {
     } else {
       selectNode(null);
     }
+  }
+
+  async function handleReorder(
+    operation: "up" | "down",
+    node: ArboristNode
+  ): Promise<void> {
+    if (operation === "up") {
+      try {
+        const prevNode = treeRef.current
+          ?.get(node.id)
+          ?.parent?.children?.find(
+            (child) =>
+              child.data.metadata.nodetype === node.metadata.nodetype &&
+              child.data.order !== null &&
+              node.order !== null &&
+              child.data.order === node.order - 10
+          )?.data;
+        if (!prevNode) {
+          console.error(
+            `prevNode not found ${node.nodetype}. Check treeData and order values.`
+          );
+          return;
+        }
+        console.log("prevNode found:", prevNode);
+        // If I move logic to services, I call function here (WIP)
+        // prevNode.order ? prevNode.order + 5 : null;
+        // node.order ? node.order - 10 : null;
+        let prevSlice = prevNode.name.slice(0, 2);
+        let newSlice = node.name.slice(0, 2);
+        await renameFile(node.metadata.path, prevSlice + node.name.slice(2));
+        await renameFile(
+          prevNode.metadata.path,
+          newSlice + prevNode.name.slice(2)
+        );
+        // prevNode.order ? prevNode.order + 5 : null;
+        // renameFile(prevNode)
+      } catch (error) {
+        console.error("Error al mover el archivo:", error);
+      }
+    } else if (operation === "down") {
+      try {
+        const nextNode = treeRef.current
+          ?.get(node.id)
+          ?.parent?.children?.find(
+            (child) =>
+              child.data.metadata.nodetype === node.metadata.nodetype &&
+              child.data.order !== null &&
+              node.order !== null &&
+              child.data.order === node.order + 10
+          )?.data;
+        if (!nextNode) {
+          console.error(
+            `nextNode not found ${node.nodetype}. Check treeData and order values.`
+          );
+          return;
+        }
+        console.log("nextNode found:", nextNode);
+        // If I move logic to services, I call function here (WIP)
+        // nextNode.order ? nextNode.order - 5 : null;
+        // node.order ? node.order + 10 : null;
+        let prevSlice = node.name.slice(0, 2);
+        let newSlice = nextNode.name.slice(0, 2);
+        await renameFile(node.metadata.path, newSlice + node.name.slice(2));
+        await renameFile(
+          nextNode.metadata.path,
+          prevSlice + nextNode.name.slice(2)
+        );
+      } catch (error) {
+        console.error("Error al mover el archivo:", error);
+      }
+    }
+    await fetchTree();
   }
 
   async function handleMoveFile(
@@ -210,7 +283,8 @@ function TreeComponent(): JSX.Element {
   }, [movingNode]);
 
   return (
-    <div style={{ overflowY: "auto" }}>
+    <div
+      style={{ overflow: "visible" }}>
       <Tree
         ref={treeRef}
         data={treeData}
@@ -255,23 +329,33 @@ function TreeComponent(): JSX.Element {
               }}
               ref={dragHandle}
             >
-              <span
-                style={{
-                  fontWeight:
-                    node.isSelected && !movingNode ? "bold" : "normal",
-                  color:
-                    movingNode && treeitem.nodetype !== "directory"
-                      ? "#999"
-                      : "#000",
-                }}
-              >
+              <span>
                 {treeitem.nodetype === "directory"
                   ? "📁"
                   : getIcon(arboristNode)}{" "}
-                {arboristNode.order ? arboristNode.order + ") " : ""}
-                {arboristNode.nodename
-                  ? arboristNode.nodename
-                  : arboristNode.name}
+                <span
+                  style={{
+                    textDecoration: node.data.name.startsWith("XX")
+                      ? "line-through"
+                      : "none",
+                    fontStyle: node.data.name.startsWith("XX")
+                      ? "italic"
+                      : "normal",
+                    fontWeight:
+                      node.isSelected && !movingNode ? "bold" : "normal",
+                    color:
+                      movingNode && treeitem.nodetype !== "directory"
+                        ? "#999"
+                        : node.data.name.startsWith("XX")
+                        ? "gray"
+                        : "#000",
+                  }}
+                >
+                  {arboristNode.order ? arboristNode.order * 0.1 + ". " : ""}
+                  {arboristNode.nodename
+                    ? arboristNode.nodename
+                    : arboristNode.name}
+                </span>
               </span>
               <span>
                 {treeitem.nodetype === "directory" &&
@@ -294,14 +378,20 @@ function TreeComponent(): JSX.Element {
                     !treeitem.name.includes("01") &&
                     (treeitem.path.includes("chapters") ||
                       treeitem.path.includes("appendices")) && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          alert(`Subir capítulo ${treeitem.name}`);
-                        }}
-                      >
-                        🔺
-                      </button>
+                      <Tooltip
+                        hint={"Subir capítulo"}
+                        children={
+                          <button
+                            onClick={() => {
+                              // e.stopPropagation();
+                              // alert(`Subir capítulo ${treeitem.name}`);
+                              handleReorder("up", arboristNode);
+                            }}
+                          >
+                            🔼
+                          </button>
+                        }
+                      ></Tooltip>
                     )
                 }
                 {
@@ -310,27 +400,76 @@ function TreeComponent(): JSX.Element {
                     node.isSelected &&
                     (treeitem.path.includes("chapters") ||
                       treeitem.path.includes("appendices")) && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          alert(`Bajar capítulo ${treeitem.name}`);
-                        }}
-                      >
-                        🔻
-                      </button>
+                      <Tooltip
+                        hint={"Bajar capítulo"}
+                        children={
+                          <button
+                            onClick={() => {
+                              // e.stopPropagation();
+                              // alert(`Bajar capítulo ${treeitem.name}`);
+                              handleReorder("down", arboristNode);
+                            }}
+                          >
+                            🔽
+                          </button>
+                        }
+                      ></Tooltip>
+                    )
+                }
+                {
+                  // TODO: Implement logic
+                  treeitem.nodetype === "file" &&
+                    node.isSelected &&
+                    (treeitem.path.includes("chapters") ||
+                      treeitem.path.includes("appendices")) &&
+                    !treeitem.name.includes("XX") && (
+                      <Tooltip hint={"Comentar capítulo"}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // alert(`Comentar capítulo ${treeitem.name}`);
+                          }}
+                        >
+                          🟥
+                        </button>
+                      </Tooltip>
+                    )
+                }
+                {
+                  // TODO: Implement logic
+                  treeitem.nodetype === "file" &&
+                    node.isSelected &&
+                    (treeitem.path.includes("chapters") ||
+                      treeitem.path.includes("appendices")) &&
+                    treeitem.name.includes("XX") && (
+                      <Tooltip hint={"Des-comentar\ncapítulo"}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // alert(`Des-comentar capítulo ${treeitem.name}`);
+                          }}
+                        >
+                          🟩
+                        </button>
+                      </Tooltip>
                     )
                 }
                 {node.isSelected && (
                   <>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deselectAll(e);
-                        setMovingNode(null);
-                      }}
-                    >
-                      ❌
-                    </button>
+                    <Tooltip
+                      hint={"Deseleccionar"}
+                      children={
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deselectAll(e);
+                            setMovingNode(null);
+                          }}
+                        >
+                          ❌
+                        </button>
+                      }
+                    ></Tooltip>
                     <DropDownMenu
                       options={[
                         {
@@ -378,7 +517,17 @@ function TreeComponent(): JSX.Element {
                           icon: "ℹ️",
                           disabled:
                             node.isSelected && treeitem.nodetype === "file",
-                          onClick: () => {},
+                          onClick: () => {
+                            // Aquí como opcional, me gustaría incluir el número de palabras si es un capítulo o anexo
+                            alert(
+                              `Info:\n
+                                -${arboristNode.name}\n
+                                -${arboristNode.metadata.path}\n
+                                -${arboristNode.metadata.nodetype}\n
+                                -${arboristNode.order}
+                              `
+                            );
+                          },
                         },
                       ]}
                     />
@@ -419,6 +568,11 @@ function TreeComponent(): JSX.Element {
           Create
         </button>
       </div>
+
+      <Tooltip
+        children={<span>Hover me</span>}
+        hint={treeRef.current?.selectedNodes?.[0]?.data.name || "No hay nada"}
+      ></Tooltip>
     </div>
   );
 }

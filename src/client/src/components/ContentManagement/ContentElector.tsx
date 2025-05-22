@@ -1,4 +1,4 @@
-// Strategy Pattern
+// Strategy Pattern NO
 import { JSX, useState, useEffect } from "react";
 import { useFileExplorerContext } from "@/hooks/FileExplorerHook";
 import { imageExtensions } from "@/common/constants";
@@ -22,18 +22,8 @@ function ContentElector(): JSX.Element {
 
   return (
     <div className="mt-8 h-2/8">
-      {contentType === "text" && (
-        <>
-          {console.log("Rendering text content")}
-          <TextArea />
-        </>
-      )}
-      {contentType === "image" && (
-        <>
-          {console.log("Rendering image content")}
-          <ImageRenderer />
-        </>
-      )}
+      {contentType === "text" && <TextArea />}
+      {contentType === "image" && <ImageRenderer />}
     </div>
   );
 }

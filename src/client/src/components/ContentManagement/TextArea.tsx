@@ -30,7 +30,7 @@ function TextArea(): JSX.Element {
       setContent(fileContent || "");
     } else if (selectedNode?.metadata.name.endsWith("pdf")) {
       setContent(
-        "Por motivos de rendimiento, no es posible visualizar ni editar archivos PDF. Por favor, descargue el archivo para editarlo."
+        "Los documentos PDF no están disponibles para su previsualización. Por favor, descargue el archivo para verlo."
       );
     }
   }, [fileContent, selectedNode]);

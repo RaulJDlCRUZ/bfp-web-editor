@@ -1,6 +1,6 @@
 {
   "name": "bfp-web-editor",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "main": "index.js",
   "keywords": [
     "bfp",
@@ -56,8 +56,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:svglib:check": "dpkg -l | grep librsvg2-bin",
     "test:svglib:install": "sudo apt-get install librsvg2-bin",
-    "get_template": "curl -X GET 'https://www.felixalbertos.com/files/tfggii.zip' -o tfggii.zip && unzip -d tfggii tfggii.zip && rm tfggii.zip",
-    "get_template2": "curl -X GET 'https://www.felixalbertos.com/files/tfggii.zip' -o tfggii.zip && unzip -d . tfggii.zip && mv template/ tfggii/ && rm tfggii.zip",
+    "curl_template_legacy": "curl -X GET 'https://www.felixalbertos.com/files/tfggii.zip' -o tfggii.zip && unzip -d tfggii tfggii.zip && rm tfggii.zip",
+    "curl_template": "curl -X GET 'https://www.felixalbertos.com/files/tfggii.zip' -o tfggii.zip && unzip -d . tfggii.zip && mv template/ tfggii/ && rm tfggii.zip",
+    "remove_unn_f": "rm -rf ./tfggii/templateAPP/plantuml-images/ && rm -rf ./tfggii/templateAPP/input/appendices/plantuml-images",
+    "get_template": "npm run curl_template && npm run remove_unn_f",
+    "remove_template": "rm -rf tfggii/",
     "backend:build": "npx tsc -p src/server",
     "backend:start": "node dist/src/index.js",
     "backend:dev": "DEBUG=* NODE_ENV=development tsx watch src/server/src/index.ts",
