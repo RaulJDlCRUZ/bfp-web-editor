@@ -1,6 +1,7 @@
 import React, { useState, Suspense } from "react";
 import CompileButton from "@/components/CompileButton/CompileButton";
 import ContentElector from "@/components/ContentManagement/ContentElector";
+import ResizableSplit from "@/components/Splitter";
 import { FileExplorerProvider } from "@/context/FileExplorerContext";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
@@ -13,8 +14,8 @@ const NewCompilePage: React.FC = () => {
     <FileExplorerProvider>
       <div className="flex flex-col items-center justify-start">
         <div className="flex w-full">
-          <div className="text-left w-2/5">
-            <div className="mt-8 h-2/8">
+          <ResizableSplit
+            leftChild={
               <Suspense
                 fallback={
                   <div>
@@ -26,26 +27,24 @@ const NewCompilePage: React.FC = () => {
               >
                 <FileTree />
               </Suspense>
-            </div>
-          </div>
-          <div className="text-right w-3/5">
-            <ContentElector />
-          </div>
+            }
+            rightChild={<ContentElector />}
+          />
         </div>
 
-        <div className="text-center">
-          <p className="text-gray-400 text-lg mt-4">
-            Click the button below to compile the document
-          </p>
-          <div className="mt-6">
+        <div className="text-right w-11/12">
+          <div className="mt-6 justify-end">
+            {/* TODO: Add a tooltip? */}
             <CompileButton setDocumentData={setDocumentData} />
           </div>
+          {/* Dummy space to avoid the compile button crashing into footer */}
           <div className="mt-10"></div>
         </div>
 
         {documentData && (
           <div className="mt-8 flex justify-center w-11/12">
             <object
+            // TODO: When document is ready, "fell" towards the document
               data={`${BACKEND_URI}/doc/result`}
               type="application/pdf"
               width="100%"

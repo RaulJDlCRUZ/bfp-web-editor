@@ -15,7 +15,7 @@ import {
 } from "@/services/fileOperations";
 import FileUploader from "./FileUploader";
 import DropDownMenu from "./DropDown";
-import Tooltip from "./Tooltips/Tooltip";
+import Tooltip from "./Tooltips/Tooltipv2";
 
 function TreeComponent(): JSX.Element {
   const [treeData, setTreeData] = useState<ArboristNode[]>([]);
@@ -283,8 +283,7 @@ function TreeComponent(): JSX.Element {
   }, [movingNode]);
 
   return (
-    <div
-      style={{ overflow: "visible" }}>
+    <div style={{ overflow: "visible" }}>
       <Tree
         ref={treeRef}
         data={treeData}
@@ -301,54 +300,66 @@ function TreeComponent(): JSX.Element {
           const isRestricted = arboristNode.restricted;
           const isEditable = arboristNode.edit;
           const treeitem = arboristNode.metadata;
+          const isSelected = node.isSelected;
+          const isFile = treeitem.nodetype === "file";
+          const isDirectory = treeitem.nodetype === "directory";
+          const isChapterOrAppendix =
+            treeitem.path.includes("chapters") ||
+            treeitem.path.includes("appendices");
+          const isCommented = treeitem.name.includes("XX");
+          const isFirstChapter = treeitem.name.includes("01");
+
           return (
             <div
               style={{
                 ...style,
-                // fontFamily: "Arial, sans-serif",
-                fontSize: "14px",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
                 paddingRight: "0.5rem",
+                margin: 0,
+                position: "relative",
                 borderRadius: "1px",
                 userSelect: "none",
+                fontSize: "14px",
                 backgroundColor: movingNode
-                  ? treeitem.nodetype === "directory"
+                  ? isDirectory
                     ? "#d0e7ff"
                     : "white"
-                  : node.isSelected
+                  : isSelected
                   ? isRestricted && !isEditable
                     ? "#ededed"
                     : "#edffe8"
                   : "white",
-                cursor:
-                  movingNode && treeitem.nodetype !== "directory"
-                    ? "not-allowed"
-                    : "pointer",
+                cursor: movingNode && !isDirectory ? "not-allowed" : "pointer",
               }}
               ref={dragHandle}
             >
-              <span>
-                {treeitem.nodetype === "directory"
-                  ? "📁"
-                  : getIcon(arboristNode)}{" "}
+              {/* Contenido principal del nodo - lado izquierdo */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  flex: 1,
+                  minWidth: 0, // Permite que el texto se trunque si es necesario
+                }}
+              >
+                <span style={{ marginRight: "0.5rem" }}>
+                  {isDirectory ? "📁" : getIcon(arboristNode)}
+                </span>
                 <span
                   style={{
-                    textDecoration: node.data.name.startsWith("XX")
-                      ? "line-through"
-                      : "none",
-                    fontStyle: node.data.name.startsWith("XX")
-                      ? "italic"
-                      : "normal",
-                    fontWeight:
-                      node.isSelected && !movingNode ? "bold" : "normal",
+                    textDecoration: isCommented ? "line-through" : "none",
+                    fontStyle: isCommented ? "italic" : "normal",
+                    fontWeight: isSelected && !movingNode ? "bold" : "normal",
                     color:
-                      movingNode && treeitem.nodetype !== "directory"
+                      movingNode && !isDirectory
                         ? "#999"
-                        : node.data.name.startsWith("XX")
+                        : isCommented
                         ? "gray"
                         : "#000",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {arboristNode.order ? arboristNode.order * 0.1 + ". " : ""}
@@ -356,10 +367,21 @@ function TreeComponent(): JSX.Element {
                     ? arboristNode.nodename
                     : arboristNode.name}
                 </span>
-              </span>
-              <span>
-                {treeitem.nodetype === "directory" &&
-                  node.isSelected &&
+              </div>
+
+              {/* Contenedor de botones - lado derecho */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "2px",
+                  flexShrink: 0, // Evita que los botones se compriman
+                  marginLeft: "auto", // Empuja los botones hacia la derecha
+                }}
+              >
+                {/* Botón crear directorio */}
+                {isDirectory &&
+                  isSelected &&
                   !movingNode &&
                   arboristNode.ableMkdir && (
                     <button
@@ -367,173 +389,193 @@ function TreeComponent(): JSX.Element {
                         e.stopPropagation();
                         handleCreateDirectory(arboristNode);
                       }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        padding: "2px",
+                      }}
                     >
                       ➕📁
                     </button>
                   )}
-                {
-                  // TODO: Replace 01 Logic to detect, using a queue, if 1st chapter or appendix
-                  treeitem.nodetype === "file" &&
-                    node.isSelected &&
-                    !treeitem.name.includes("01") &&
-                    (treeitem.path.includes("chapters") ||
-                      treeitem.path.includes("appendices")) && (
-                      <Tooltip
-                        hint={"Subir capítulo"}
-                        children={
-                          <button
-                            onClick={() => {
-                              // e.stopPropagation();
-                              // alert(`Subir capítulo ${treeitem.name}`);
-                              handleReorder("up", arboristNode);
-                            }}
-                          >
-                            🔼
-                          </button>
-                        }
-                      ></Tooltip>
-                    )
-                }
-                {
-                  // TODO: Replace 01 Logic to detect, using a queue, if last chapter or appendix
-                  treeitem.nodetype === "file" &&
-                    node.isSelected &&
-                    (treeitem.path.includes("chapters") ||
-                      treeitem.path.includes("appendices")) && (
-                      <Tooltip
-                        hint={"Bajar capítulo"}
-                        children={
-                          <button
-                            onClick={() => {
-                              // e.stopPropagation();
-                              // alert(`Bajar capítulo ${treeitem.name}`);
-                              handleReorder("down", arboristNode);
-                            }}
-                          >
-                            🔽
-                          </button>
-                        }
-                      ></Tooltip>
-                    )
-                }
-                {
-                  // TODO: Implement logic
-                  treeitem.nodetype === "file" &&
-                    node.isSelected &&
-                    (treeitem.path.includes("chapters") ||
-                      treeitem.path.includes("appendices")) &&
-                    !treeitem.name.includes("XX") && (
-                      <Tooltip hint={"Comentar capítulo"}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // alert(`Comentar capítulo ${treeitem.name}`);
-                          }}
-                        >
-                          🟥
-                        </button>
-                      </Tooltip>
-                    )
-                }
-                {
-                  // TODO: Implement logic
-                  treeitem.nodetype === "file" &&
-                    node.isSelected &&
-                    (treeitem.path.includes("chapters") ||
-                      treeitem.path.includes("appendices")) &&
-                    treeitem.name.includes("XX") && (
-                      <Tooltip hint={"Des-comentar\ncapítulo"}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // alert(`Des-comentar capítulo ${treeitem.name}`);
-                          }}
-                        >
-                          🟩
-                        </button>
-                      </Tooltip>
-                    )
-                }
-                {node.isSelected && (
-                  <>
-                    <Tooltip
-                      hint={"Deseleccionar"}
-                      children={
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deselectAll(e);
-                            setMovingNode(null);
-                          }}
-                        >
-                          ❌
-                        </button>
-                      }
-                    ></Tooltip>
-                    <DropDownMenu
-                      options={[
-                        {
-                          operation: "download",
-                          label: "Download",
-                          icon: "⬇️",
-                          onClick: () => handleDownload(arboristNode),
-                        },
-                        {
-                          operation: "rename",
-                          label: "Rename",
-                          icon: "✏️",
-                          disabled:
-                            node.isSelected && !isRestricted && !movingNode,
-                          onClick: () => handleRename(arboristNode),
-                        },
-                        {
-                          operation: "move",
-                          label: "Move",
-                          icon: "Ⓜ️",
-                          disabled:
-                            node.isSelected && !isRestricted && !movingNode,
-                          onClick: () => {
-                            if (arboristNode.metadata.nodetype === "file") {
-                              setMovingNode((prev) => {
-                                if (prev?.id !== arboristNode.id) {
-                                  return arboristNode;
-                                }
-                                return prev;
-                              });
-                            }
-                          },
-                        },
-                        {
-                          operation: "delete",
-                          label: "Delete",
-                          icon: "🗑️",
-                          disabled:
-                            node.isSelected && !isRestricted && !movingNode,
-                          onClick: () => handleDelete(arboristNode),
-                        },
-                        {
-                          operation: "info",
-                          label: "Info",
-                          icon: "ℹ️",
-                          disabled:
-                            node.isSelected && treeitem.nodetype === "file",
-                          onClick: () => {
-                            // Aquí como opcional, me gustaría incluir el número de palabras si es un capítulo o anexo
-                            alert(
-                              `Info:\n
-                                -${arboristNode.name}\n
-                                -${arboristNode.metadata.path}\n
-                                -${arboristNode.metadata.nodetype}\n
-                                -${arboristNode.order}
-                              `
-                            );
-                          },
-                        },
-                      ]}
-                    />
-                  </>
+
+                {/* Botón subir capítulo */}
+                {isFile &&
+                  isSelected &&
+                  !isFirstChapter &&
+                  isChapterOrAppendix && (
+                    <Tooltip content="Subir capítulo" position="top">
+                      <button
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          padding: "2px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleReorder("up", arboristNode);
+                        }}
+                      >
+                        🔼
+                      </button>
+                    </Tooltip>
+                  )}
+
+                {/* Botón bajar capítulo */}
+                {isFile && isSelected && isChapterOrAppendix && (
+                  <Tooltip content="Bajar capítulo">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReorder("down", arboristNode);
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        padding: "2px",
+                      }}
+                    >
+                      🔽
+                    </button>
+                  </Tooltip>
                 )}
-              </span>
+
+                {/* Botón comentar capítulo */}
+                {isFile &&
+                  isSelected &&
+                  isChapterOrAppendix &&
+                  !isCommented && (
+                    <Tooltip content="Comentar capítulo">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // alert(`Comentar capítulo ${treeitem.name}`);
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          padding: "2px",
+                        }}
+                      >
+                        🟥
+                      </button>
+                    </Tooltip>
+                  )}
+
+                {/* Botón des-comentar capítulo */}
+                {isFile && isSelected && isChapterOrAppendix && isCommented && (
+                  <Tooltip content="Des-comentar\ncapítulo">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // alert(`Des-comentar capítulo ${treeitem.name}`);
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        padding: "2px",
+                      }}
+                    >
+                      🟩
+                    </button>
+                  </Tooltip>
+                )}
+
+                {/* Botón deseleccionar */}
+                {isSelected && (
+                  <Tooltip content="Deseleccionar">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deselectAll(e);
+                        setMovingNode(null);
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        padding: "2px",
+                      }}
+                    >
+                      ❌
+                    </button>
+                  </Tooltip>
+                )}
+
+                {/* Dropdown menu */}
+                {isSelected && (
+                  <DropDownMenu
+                    options={[
+                      {
+                        operation: "download",
+                        label: "Download",
+                        icon: "⬇️",
+                        onClick: () => handleDownload(arboristNode),
+                      },
+                      {
+                        operation: "rename",
+                        label: "Rename",
+                        icon: "✏️",
+                        disabled: isSelected && !isRestricted && !movingNode,
+                        onClick: () => handleRename(arboristNode),
+                      },
+                      {
+                        operation: "move",
+                        label: "Move",
+                        icon: "Ⓜ️",
+                        disabled: isSelected && !isRestricted && !movingNode,
+                        onClick: () => {
+                          if (isFile) {
+                            setMovingNode((prev) => {
+                              if (prev?.id !== arboristNode.id) {
+                                return arboristNode;
+                              }
+                              return prev;
+                            });
+                          }
+                        },
+                      },
+                      {
+                        operation: "delete",
+                        label: "Delete",
+                        icon: "🗑️",
+                        disabled: isSelected && !isRestricted && !movingNode,
+                        onClick: () => handleDelete(arboristNode),
+                      },
+                      {
+                        operation: "info",
+                        label: "Info",
+                        icon: "ℹ️",
+                        disabled: isSelected && isFile,
+                        onClick: () => {
+                          alert(
+                            `Info:\n
+                              -${arboristNode.name}\n
+                              -${arboristNode.metadata.path}\n
+                              -${arboristNode.metadata.nodetype}\n
+                              -${arboristNode.order}
+                            `
+                          );
+                        },
+                      },
+                    ]}
+                  />
+                )}
+              </div>
             </div>
           );
         }}
@@ -554,27 +596,30 @@ function TreeComponent(): JSX.Element {
           <FileUploader />
         </div>
       </div>
-      <div className="flex justify-between mt-4">
-        <input
-          type="text"
-          placeholder="Enter filename..."
-          id="filename"
-          className="border border-gray-300 rounded px-2 py-1"
-        />
-        <button
-          className="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded"
-          onClick={handleCreate}
-        >
-          Create
-        </button>
-      </div>
-
-      <Tooltip
-        children={<span>Hover me</span>}
-        hint={treeRef.current?.selectedNodes?.[0]?.data.name || "No hay nada"}
-      ></Tooltip>
     </div>
+
+      // <div className="flex justify-between mt-4">
+      //   <input
+      //     type="text"
+      //     placeholder="Enter filename..."
+      //     id="filename"
+      //     className="border border-gray-300 rounded px-2 py-1"
+      //   />
+      //   <button
+      //     className="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded"
+      //     onClick={handleCreate}
+      //   >
+      //     Create
+      //   </button>
+      // </div>
+
+      // <Tooltip
+      //   content={
+      //     treeRef.current?.selectedNodes?.[0]?.data.name || "No hay nada"
+      //   }
+      // >
+      //   <span>Hover me</span>
+      // </Tooltip>
   );
 }
-
 export default TreeComponent;

@@ -51,17 +51,21 @@ function DropDownMenu({ options }: DropDownMenuProps): JSX.Element {
                 (option) => option.operation === "download" || option.disabled
               )
               .map((option, index) => (
-                <a
+                <div
                   key={index}
                   className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  onClick={option.onClick}
                   role="menuitem"
                   tabIndex={-1}
                   style={{ lineHeight: "1.5rem", height: "1.5rem" }} // Adjusted height to match font height
+                  onClick={option.onClick}
                 >
-                  {option.label}
-                  <span className="mr-2">{option.icon}</span>
-                </a>
+                  <div className="flex-none" style={{ textAlign: "right" }}>
+                    {option.label}
+                  </div>
+                  <div className="flex-1" style={{ textAlign: "left" }}>
+                    {option.icon}
+                  </div>
+                </div>
               ))}
           </div>
         </div>
