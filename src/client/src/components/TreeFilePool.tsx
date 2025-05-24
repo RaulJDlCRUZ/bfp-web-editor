@@ -12,22 +12,35 @@ import {
   renameFile,
   fetchFiles,
   moveFile,
+  uploadFile,
 } from "@/services/fileOperations";
-import FileUploader from "./FileUploader";
 import DropDownMenu from "./DropDown";
 import Tooltip from "./Tooltips/Tooltipv2";
 
 function TreeComponent(): JSX.Element {
   const [treeData, setTreeData] = useState<ArboristNode[]>([]);
+  const [movingNode, setMovingNode] = useState<ArboristNode | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [nodeCount, setNodeCount] = useState<number>(0);
   const treeRef = useRef<TreeApi<ArboristNode>>(null);
   const { selectNode } = useFileExplorerContext();
-  const [movingNode, setMovingNode] = useState<ArboristNode | null>(null);
+
+  function getNodeCount(firstnode: ArboristNode): number {
+    let count = 0;
+    if (firstnode.children) {
+      for (const child of firstnode.children) {
+        count += getNodeCount(child);
+      }
+    }
+    return count + 1; // Contar el nodo actual
+  }
 
   async function fetchTree(): Promise<void> {
     try {
       const data = await fetchFiles();
       const transformed = transformToArborist(data);
       setTreeData([transformed]);
+      setNodeCount(getNodeCount(transformed));
     } catch (error) {
       console.error("Error al cargar el árbol:", error);
     }
@@ -182,6 +195,29 @@ function TreeComponent(): JSX.Element {
     }
   }
 
+  function handleUploadTrigger(): void {
+    fileInputRef.current?.click();
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await uploadFile(file);
+      alert(`Archivo ${file.name} subido con éxito`);
+      await fetchTree();
+    } catch (err) {
+      alert(`Error al subir ${file.name}`);
+      console.error(`Error al subir ${file.name}:`, err);
+    }
+
+    // Reset the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
   function deselectAll(e: React.MouseEvent): void {
     e.stopPropagation(); // Evita la propagación del evento
     if (treeRef.current) {
@@ -219,10 +255,13 @@ function TreeComponent(): JSX.Element {
   }
 
   async function handleCreate(): Promise<void> {
-    const filename: string = (
-      document.getElementById("filename") as HTMLInputElement
-    ).value;
+    const filename = window.prompt("Enter the name of the new file:");
+    if (!filename || filename.trim() === "") {
+      alert("File name cannot be empty");
+      return;
+    }
     try {
+      // TODO: when adding file, consider matching folder
       const result = await createFile(filename);
       console.log(result);
       alert(`Archivo ${filename} creado con éxito`);
@@ -283,15 +322,38 @@ function TreeComponent(): JSX.Element {
   }, [movingNode]);
 
   return (
-    <div style={{ overflow: "visible" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFileUpload}
+      />
+      <Tooltip
+        content="Agrega un fichero de tu equipo a la plantilla"
+        position="bottom"
+      >
+        <button
+          onClick={handleUploadTrigger}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "14px",
+            padding: "0px",
+          }}
+        >
+          <b>Subir fichero ⏏️</b>
+        </button>
+      </Tooltip>
       <Tree
         ref={treeRef}
         data={treeData}
-        height={400}
         width="100%"
-        rowHeight={24}
-        padding={8}
-        indent={24}
+        rowHeight={20}
+        height={Math.min(nodeCount * 20, 400)}
+        padding={0}
+        indent={20}
         disableMultiSelection={false}
         onSelect={handleSelect}
       >
@@ -400,7 +462,27 @@ function TreeComponent(): JSX.Element {
                       ➕📁
                     </button>
                   )}
-
+                {/* Botón crear archivo */}
+                {isDirectory &&
+                  isSelected &&
+                  !movingNode &&
+                  isChapterOrAppendix && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCreate();
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        padding: "2px",
+                      }}
+                    >
+                      ➕📄
+                    </button>
+                  )}
                 {/* Botón subir capítulo */}
                 {isFile &&
                   isSelected &&
@@ -568,7 +650,7 @@ function TreeComponent(): JSX.Element {
                               -${arboristNode.metadata.path}\n
                               -${arboristNode.metadata.nodetype}\n
                               -${arboristNode.order}
-                            `
+                              `
                           );
                         },
                       },
@@ -580,46 +662,7 @@ function TreeComponent(): JSX.Element {
           );
         }}
       </Tree>
-
-      <div className="flex justify-between items-center mt-4">
-        {treeRef.current?.selectedNodes?.[0] && (
-          <div className="tree-actions">
-            <button
-              className="bg-gray-500 hover:bg-gray-400 text-white font-bold py-2 px-4 border-b-4 border-gray-700 hover:border-gray-500 rounded"
-              onClick={deselectAll}
-            >
-              Deselect
-            </button>
-          </div>
-        )}
-        <div className="ml-auto">
-          <FileUploader />
-        </div>
-      </div>
     </div>
-
-      // <div className="flex justify-between mt-4">
-      //   <input
-      //     type="text"
-      //     placeholder="Enter filename..."
-      //     id="filename"
-      //     className="border border-gray-300 rounded px-2 py-1"
-      //   />
-      //   <button
-      //     className="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded"
-      //     onClick={handleCreate}
-      //   >
-      //     Create
-      //   </button>
-      // </div>
-
-      // <Tooltip
-      //   content={
-      //     treeRef.current?.selectedNodes?.[0]?.data.name || "No hay nada"
-      //   }
-      // >
-      //   <span>Hover me</span>
-      // </Tooltip>
   );
 }
 export default TreeComponent;

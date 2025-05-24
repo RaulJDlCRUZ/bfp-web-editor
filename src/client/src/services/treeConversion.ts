@@ -9,7 +9,6 @@ import {
 } from "@/common/constants";
 
 import { TreeNode, ArboristNode } from "@/common/types";
-// import axiosInstance from "./axiosInstance";
 
 function getType(nodePath: string): "chapter" | "appendix" | "setup" | "other" {
   // Nos aseguramos que el número de ocurrencias de "/" sea 2, para evitar que se cuelen archivos de subcarpetas (length es 3 si hay 2 "/")
@@ -55,6 +54,10 @@ function isAbleToCreateDirectory(type: string, nodePath: string): boolean {
 }
 
 // otra func, sobre transformToArborist <--- SEA LA QUE SE VEA EN EL CLIENTE
+
+// Create an ArboristNode from the config file
+// export function retrieveConfigAsNode(): ArboristNode {}
+
 
 // Función recursiva para transformar el árbol de backend a formato Arborist
 export function transformToArborist(

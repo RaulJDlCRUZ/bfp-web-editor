@@ -1,10 +1,11 @@
 import express from "express";
-import dotenv from "dotenv";
+import dotenv, { config } from "dotenv";
 import path from "path";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import fileRoutes from "./routes/files.routes.js";
 import compileRoutes from "./routes/compile.routes.js";
+import configRoutes from "./routes/config.routes.js";
 import { removeOldDoc } from "./utils/removeOldDoc.js";
 
 dotenv.config({ override: true });
@@ -28,6 +29,7 @@ export const root =
     : path.resolve(__dirname, "..", "..");
 export const folderPath = path.join(root, inputdir);
 export const outputPath = path.join(root, docdir);
+export const configPath = path.join(folderPath, "..", "config.yaml");
 export const clientPath = path.join(root, "/dist/public/");
 
 // Serve static files from the frontend
@@ -38,6 +40,9 @@ app.use("/input", express.static(folderPath));
 
 // Serve result from a specific directory
 app.use("/output", express.static(outputPath));
+
+// Serve the app config
+// app.use("/config", express.static(configPath));
 
 // Serve input images from its directory
 app.use(
@@ -51,6 +56,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/files", fileRoutes);
 app.use("/api/doc", compileRoutes);
+app.use("/config", configRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK" });
