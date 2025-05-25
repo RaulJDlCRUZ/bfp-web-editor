@@ -1,4 +1,4 @@
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "./axios/apiInstance";
 
 export async function getConfig(): Promise<Record<string, any>> {
   try {
@@ -12,10 +12,23 @@ export async function getConfig(): Promise<Record<string, any>> {
     throw error;
   }
 }
+
+export async function getConfigNode(): Promise<any> {
+  try {
+    const response = await axiosInstance.get("/config/node");
+    if (!response || (response && !response.data))
+      throw new Error("Error al obtener la configuración");
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener la configuración:", error);
+    throw error;
+  }
+}
+
 export async function updateConfig(config: Record<string, any>): Promise<void> {
   try {
     const response = await axiosInstance.patch("/config", { config });
-    if (!response.data || !response.data.success) {
+    if (!response.data || response.status !== 200) {
       throw new Error("Error al actualizar la configuración");
     }
   } catch (error) {

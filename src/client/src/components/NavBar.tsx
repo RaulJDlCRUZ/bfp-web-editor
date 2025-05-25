@@ -1,18 +1,18 @@
 /* Adapted from Anonymous: https://www.creative-tim.com/twcomponents/component/navbar-7 */
-import React from "react";
+import { JSX } from "react";
 import TWESVG from "../assets/twe/TWE_black.svg";
 
-const NavBar: React.FC = () => {
+function NavBar(): JSX.Element {
   return (
-    <nav className="bg-gray-200 shadow shadow-gray-300 w-100 px-8 md:px-auto">
+    <nav className="bg-gray-200 w-100 px-8 md:px-auto">
       <div className="md:h-16 h-28 mx-auto md:px-4 container flex items-center justify-between flex-wrap md:flex-nowrap">
         <a href="/" className="flex items-center">
-        <div className="text-green-500 md:order-1 md:mr-4">
-          <img src={TWESVG} alt="TWE Logo" className="h-16 w-16" />
-        </div>
-        <div className="text-gray-700 text-xl font-bold md:order-2 md:mr-auto">
-          TFG Web Editor
-        </div>
+          <div className="text-green-500 md:order-1 md:mr-4">
+            <img src={TWESVG} alt="TWE Logo" className="h-16 w-16" />
+          </div>
+          <div className="text-gray-700 text-xl font-bold md:order-2 md:mr-auto">
+            TFG Web Editor
+          </div>
         </a>
         <div className="text-gray-500 order-3 w-full md:w-auto md:order-2">
           <ul className="flex font-semibold justify-between">
@@ -33,6 +33,6 @@ const NavBar: React.FC = () => {
       </div>
     </nav>
   );
-};
+}
 
 export default NavBar;

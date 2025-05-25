@@ -9,12 +9,8 @@ function ResizableSplit({
 }): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const leftChildRef = useRef<HTMLDivElement>(null);
-  const rightChildRef = useRef<HTMLDivElement>(null);
   const [leftWidth, setLeftWidth] = useState(500);
   const [isDragging, setIsDragging] = useState(false);
-  const [containerHeight, setContainerHeight] = useState<number | undefined>(
-    undefined
-  );
 
   const startDragging = () => setIsDragging(true);
   const stopDragging = () => setIsDragging(false);
@@ -36,30 +32,10 @@ function ResizableSplit({
     };
   }, [isDragging]);
 
-  useEffect(() => {
-    const updateHeight = () => {
-      if (leftChildRef.current && rightChildRef.current) {
-        const leftHeight = leftChildRef.current.offsetHeight;
-        const rightHeight = rightChildRef.current.offsetHeight;
-        setContainerHeight(Math.max(leftHeight, rightHeight));
-      }
-    };
-
-    updateHeight();
-
-    // Optionally, observe changes in child content
-    const resizeObserver = new ResizeObserver(updateHeight);
-    if (leftChildRef.current) resizeObserver.observe(leftChildRef.current);
-    if (rightChildRef.current) resizeObserver.observe(rightChildRef.current);
-
-    return () => resizeObserver.disconnect();
-  }, [leftChild, rightChild]);
-
   return (
     <div
       ref={containerRef}
-      className="flex w-full"
-      style={{ height: containerHeight }}
+      className="flex w-full h-full" // Asegura que ocupe todo el espacio disponible
     >
       <div
         ref={leftChildRef}
@@ -72,7 +48,10 @@ function ResizableSplit({
         className="w-1 bg-gray-400 cursor-col-resize"
         onMouseDown={startDragging}
       />
-      <div ref={rightChildRef} className="flex-1 bg-white p-4 overflow-auto">
+      <div
+        className="flex-1 p-4 overflow-auto"
+        style={{ paddingTop: 0, paddingBottom: 0 }}
+      >
         {rightChild}
       </div>
     </div>

@@ -30,7 +30,7 @@ function ContentElector(): JSX.Element {
   }, [selectedNode]);
 
   return (
-    <div className="mt-8 h-2/8">
+    <div className="mt-8">
       {contentType === "cfg" && <ConfigForm />}
       {contentType === "text" && <TextArea />}
       {contentType === "image" && <ImageRenderer />}

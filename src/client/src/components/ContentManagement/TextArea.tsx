@@ -6,6 +6,7 @@ function TextArea(): JSX.Element {
   const { selectedNode, fileContent, saveFile, reloadContent } =
     useFileExplorerContext();
   const [content, setContent] = useState("");
+  const [filename, setFilename] = useState("-");
 
   async function handleSave() {
     try {
@@ -22,24 +23,43 @@ function TextArea(): JSX.Element {
   }
 
   useEffect(() => {
-    if (
-      selectedNode &&
-      selectedNode.metadata.nodetype !== "directory" &&
-      selectedNode.metadata.filetype !== "pdf"
-    ) {
-      setContent(fileContent || "");
-    } else if (selectedNode?.metadata.name.endsWith("pdf")) {
-      setContent(
-        "Los documentos PDF no están disponibles para su previsualización. Por favor, descargue el archivo para verlo."
+    if (selectedNode) {
+      setFilename(
+        `${
+          selectedNode.order ? ` ${0.1 * selectedNode.order + "."}` : ""
+        } ${selectedNode.nodename}` || ""
       );
+      if (
+        selectedNode.metadata.nodetype !== "directory" &&
+        selectedNode.metadata.filetype !== "pdf"
+      ) {
+        setContent(fileContent || "");
+      } else if (selectedNode.metadata.name.endsWith("pdf")) {
+        setContent(
+          "Los documentos PDF no están disponibles para su previsualización. Por favor, descargue el archivo para verlo."
+        );
+      }
     }
   }, [fileContent, selectedNode]);
 
   return (
-    <div className="flex flex-col items-center justify-start h-full">
+    <div className="flex flex-col items-start justify-start h-full">
+      <div className="w-full flex justify-center items-center mb-2">
+        <span
+          className={`text-lg font-bold ${
+            !selectedNode ||
+            selectedNode.metadata.nodetype === "directory" ||
+            selectedNode.metadata.filetype === "pdf"
+              ? "text-gray-900/50"
+              : "text-gray-900"
+          }`}
+        >
+          {filename}
+        </span>
+      </div>
       <div
-        style={{ height: "400px" }} // Same as FileTree
-        className="resize-none md:resize w-11/12"
+        style={{ height: "calc(100vh * 0.5)" }}
+        className="resize-none md:resize w-full h-auto"
       >
         <textarea
           className="w-full h-full p-3 border border-gray-300 rounded-none resize-none font-mono focus:outline-none focus:ring-1 focus:ring-gray-900"
@@ -53,7 +73,7 @@ function TextArea(): JSX.Element {
           placeholder={selectedNode ? "" : "Select a file to start working"}
         ></textarea>
       </div>
-      <div className="flex justify-end w-11/12 py-1.5">
+      <div className="flex justify-end w-full py-1.5">
         <div className="flex gap-2">
           <button
             className="px-4 py-2 text-s font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-sm select-none hover:bg-gray-900/10 active:bg-gray-900/20 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"

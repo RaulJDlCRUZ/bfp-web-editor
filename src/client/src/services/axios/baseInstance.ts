@@ -1,15 +1,15 @@
 import axios from "axios";
 
-const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
+const BASE_BACKEND_URI = import.meta.env.VITE_BACKEND_BS_URI;
 const MAX_TIME = 60000; // 60 segundos
 
-if (!BACKEND_URI) {
+if (!BASE_BACKEND_URI) {
   console.error("Error: VITE_BACKEND_URI no está definido en el entorno.");
 }
 
-// Mi instancia base de Axios
-const axiosInstance = axios.create({
-  baseURL: BACKEND_URI,
+// Mi instancia base de Axios para recursos estáticos
+const baseInstance = axios.create({
+  baseURL: BASE_BACKEND_URI,
   timeout: MAX_TIME,
   headers: {
     "Content-Type": "application/json",
@@ -17,4 +17,4 @@ const axiosInstance = axios.create({
   },
 });
 
-export default axiosInstance;
+export default baseInstance;

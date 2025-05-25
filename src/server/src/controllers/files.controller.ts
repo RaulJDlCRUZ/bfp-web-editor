@@ -27,7 +27,7 @@ function extractOrder(filename: string): number {
   const order: number = parseInt(slice, 10);
   if (isNaN(order)) return 0;
   // console.log("ORDER->", filename, slice, order);
-  return (10 * order);
+  return 10 * order;
 }
 
 /*
@@ -96,7 +96,7 @@ function makeDirectoryTree(dirPath: string): any {
       filetype: path.extname(name).slice(1), // Remove the dot
       size: stats.size,
       friendlyname: friendlyName,
-      order: priorityOrder
+      order: priorityOrder,
     };
   }
 }

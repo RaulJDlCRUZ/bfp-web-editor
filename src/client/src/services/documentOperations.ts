@@ -1,4 +1,4 @@
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "./axios/apiInstance";
 
 export async function fetchDocument() {
   try {

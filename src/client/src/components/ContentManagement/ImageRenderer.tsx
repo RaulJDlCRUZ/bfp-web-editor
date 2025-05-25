@@ -2,7 +2,7 @@ import { JSX, useState, useEffect } from "react";
 import { useFileExplorerContext } from "@/hooks/FileExplorerHook";
 import { imageExtensions } from "@/common/constants";
 
-const BACKEND_URI = import.meta.env.VITE_BACKEND_WS_URI; // without api suffix
+const BASE_BACKEND_URI = import.meta.env.VITE_BACKEND_BS_URI; // without api suffix
 
 function ImageRenderer(): JSX.Element {
   const { selectedNode } = useFileExplorerContext();
@@ -24,7 +24,7 @@ function ImageRenderer(): JSX.Element {
     >
       {imageName && (
         <img
-          src={`${BACKEND_URI}/images/${imageName}`}
+          src={`${BASE_BACKEND_URI}/images/${imageName}`}
           alt={`${imageName}`}
           className={`w-full h-full border border-gray-300 ${
             imageExtensions[imageName.split(".").pop()?.toLowerCase() || ""] ||

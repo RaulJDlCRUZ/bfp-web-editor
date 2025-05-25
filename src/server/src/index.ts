@@ -35,16 +35,7 @@ export const clientPath = path.join(root, "/dist/public/");
 // Serve static files from the frontend
 app.use(express.static(clientPath));
 
-// Serve input files from its directory
-app.use("/input", express.static(folderPath));
-
-// Serve result from a specific directory
-app.use("/output", express.static(outputPath));
-
-// Serve the app config
-// app.use("/config", express.static(configPath));
-
-// Serve input images from its directory
+// Serve input images from its input directory
 app.use(
   "/images",
   express.static(path.join(folderPath, "resources", "images"))
@@ -54,9 +45,9 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(clientPath, "index.html"));
 });
 
-app.use("/api/files", fileRoutes);
 app.use("/api/doc", compileRoutes);
-app.use("/config", configRoutes);
+app.use("/api/files", fileRoutes);
+app.use("/api/config", configRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK" });
@@ -81,5 +72,5 @@ app.listen(port, () => {
     console.log(`[server]: Makefile path is ${process.env.MAKEPATH}`);
     console.log(`[server]: Makefile name is ${file}`);
   }
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+  console.log(`[server]: TWE is running at http://localhost:${port}`);
 });

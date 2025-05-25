@@ -87,7 +87,7 @@ export const hideDirectories: { [directory: string]: boolean } = {
 
 // ! Probablemennte sea movido o eliminado al implementarse la BD
 export const prettySetupFiles: { [extension: string]: string } = {
-  "input/config.yaml": "Config",
+  "config.yaml": "Config",
   "input/resources/bibliography/bibliography.bib": "Bibliography",
   "input/abstract.md": "Abstract",
   "input/acknowledgements.md": "Acknowledgements",

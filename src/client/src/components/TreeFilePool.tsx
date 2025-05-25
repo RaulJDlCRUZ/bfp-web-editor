@@ -10,12 +10,13 @@ import {
   deleteFile,
   createDirectory,
   renameFile,
-  fetchFiles,
+  fetchFileListing,
   moveFile,
   uploadFile,
 } from "@/services/fileOperations";
 import DropDownMenu from "./DropDown";
 import Tooltip from "./Tooltips/Tooltipv2";
+import { getConfigNode } from "@/services/configOperations";
 
 function TreeComponent(): JSX.Element {
   const [treeData, setTreeData] = useState<ArboristNode[]>([]);
@@ -37,7 +38,7 @@ function TreeComponent(): JSX.Element {
 
   async function fetchTree(): Promise<void> {
     try {
-      const data = await fetchFiles();
+      const data = await fetchFileListing();
       const transformed = transformToArborist(data);
       setTreeData([transformed]);
       setNodeCount(getNodeCount(transformed));
@@ -65,7 +66,7 @@ function TreeComponent(): JSX.Element {
         selectNode(null);
       }
       selectNode(inputNode);
-      console.log("Seleccionado:", inputNode);
+      console.log("Nodo de árbol sel.:", inputNode);
     } else {
       selectNode(null);
     }
@@ -322,225 +323,167 @@ function TreeComponent(): JSX.Element {
   }, [movingNode]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <input
         type="file"
         ref={fileInputRef}
         style={{ display: "none" }}
         onChange={handleFileUpload}
       />
-      <Tooltip
-        content="Agrega un fichero de tu equipo a la plantilla"
-        position="bottom"
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "auto",
+        }}
       >
-        <button
-          onClick={handleUploadTrigger}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "14px",
-            padding: "0px",
-          }}
+        <Tooltip
+          content="Agrega un fichero de tu equipo a la plantilla"
+          position="bottom"
         >
-          <b>Subir fichero ⏏️</b>
-        </button>
-      </Tooltip>
-      <Tree
-        ref={treeRef}
-        data={treeData}
-        width="100%"
-        rowHeight={20}
-        height={Math.min(nodeCount * 20, 400)}
-        padding={0}
-        indent={20}
-        disableMultiSelection={false}
-        onSelect={handleSelect}
-      >
-        {({ node, style, dragHandle }) => {
-          const arboristNode = node.data as ArboristNode;
-          const isRestricted = arboristNode.restricted;
-          const isEditable = arboristNode.edit;
-          const treeitem = arboristNode.metadata;
-          const isSelected = node.isSelected;
-          const isFile = treeitem.nodetype === "file";
-          const isDirectory = treeitem.nodetype === "directory";
-          const isChapterOrAppendix =
-            treeitem.path.includes("chapters") ||
-            treeitem.path.includes("appendices");
-          const isCommented = treeitem.name.includes("XX");
-          const isFirstChapter = treeitem.name.includes("01");
+          <button
+            onClick={handleUploadTrigger}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: movingNode ? "not-allowed" : "pointer",
+              fontSize: "14px",
+              padding: "0px",
+            }}
+            disabled={!!movingNode}
+          >
+            <b>Subir fichero ⏏️</b>
+          </button>
+        </Tooltip>
+        {/* Espacio horizontal entre botones */}
+        <span style={{ margin: "0 10px" }}></span>
+        <Tooltip content="Revisar configuración del TFG" position="bottom">
+          <button
+            style={{
+              background: "none",
+              border: "none",
+              cursor: movingNode ? "not-allowed" : "pointer",
+              fontSize: "14px",
+              padding: "0px",
+            }}
+            disabled={!!movingNode}
+            onClick={async () => {
+              const cfg = transformToArborist(await getConfigNode());
+              selectNode(cfg);
+            }}
+          >
+            <b>Config ⚙️</b>
+          </button>
+        </Tooltip>
+      </div>
+      <div style={{ flex: 1, overflow: "hidden" }}>
+        <Tree
+          ref={treeRef}
+          data={treeData}
+          width="100%"
+          rowHeight={20}
+          height={Math.min(nodeCount * 20, 400)} // Limita la altura máxima a 400px
+          padding={0}
+          indent={20}
+          disableMultiSelection={false}
+          onSelect={handleSelect}
+        >
+          {({ node, style, dragHandle }) => {
+            const arboristNode = node.data as ArboristNode;
+            const isRestricted = arboristNode.restricted;
+            const isEditable = arboristNode.edit;
+            const treeitem = arboristNode.metadata;
+            const isSelected = node.isSelected;
+            const isFile = treeitem.nodetype === "file";
+            const isDirectory = treeitem.nodetype === "directory";
+            const isChapterOrAppendix =
+              treeitem.path.includes("chapters") ||
+              treeitem.path.includes("appendices");
+            const isCommented = treeitem.name.includes("XX");
+            const isFirstChapter = treeitem.name.includes("01");
 
-          return (
-            <div
-              style={{
-                ...style,
-                display: "flex",
-                alignItems: "center",
-                paddingRight: "0.5rem",
-                margin: 0,
-                position: "relative",
-                borderRadius: "1px",
-                userSelect: "none",
-                fontSize: "14px",
-                backgroundColor: movingNode
-                  ? isDirectory
-                    ? "#d0e7ff"
-                    : "white"
-                  : isSelected
-                  ? isRestricted && !isEditable
-                    ? "#ededed"
-                    : "#edffe8"
-                  : "white",
-                cursor: movingNode && !isDirectory ? "not-allowed" : "pointer",
-              }}
-              ref={dragHandle}
-            >
-              {/* Contenido principal del nodo - lado izquierdo */}
+            return (
               <div
                 style={{
+                  ...style,
                   display: "flex",
                   alignItems: "center",
-                  flex: 1,
-                  minWidth: 0, // Permite que el texto se trunque si es necesario
+                  paddingRight: "0.5rem",
+                  margin: 0,
+                  position: "relative",
+                  borderRadius: "1px",
+                  userSelect: "none",
+                  fontSize: "14px",
+                  backgroundColor: movingNode
+                    ? isDirectory
+                      ? "#d0e7ff"
+                      : "white"
+                    : isSelected
+                    ? isRestricted && !isEditable
+                      ? "#ededed"
+                      : "#edffe8"
+                    : "white",
+                  cursor:
+                    movingNode && !isDirectory ? "not-allowed" : "pointer",
                 }}
+                ref={dragHandle}
               >
-                <span style={{ marginRight: "0.5rem" }}>
-                  {isDirectory ? "📁" : getIcon(arboristNode)}
-                </span>
-                <span
+                {/* Contenido principal del nodo - lado izquierdo */}
+                <div
                   style={{
-                    textDecoration: isCommented ? "line-through" : "none",
-                    fontStyle: isCommented ? "italic" : "normal",
-                    fontWeight: isSelected && !movingNode ? "bold" : "normal",
-                    color:
-                      movingNode && !isDirectory
-                        ? "#999"
-                        : isCommented
-                        ? "gray"
-                        : "#000",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
+                    display: "flex",
+                    alignItems: "center",
+                    flex: 1,
+                    minWidth: 0, // Permite que el texto se trunque si es necesario
                   }}
                 >
-                  {arboristNode.order ? arboristNode.order * 0.1 + ". " : ""}
-                  {arboristNode.nodename
-                    ? arboristNode.nodename
-                    : arboristNode.name}
-                </span>
-              </div>
+                  <span style={{ marginRight: "0.5rem" }}>
+                    {isDirectory ? "📁" : getIcon(arboristNode)}
+                  </span>
+                  <span
+                    style={{
+                      textDecoration: isCommented ? "line-through" : "none",
+                      fontStyle: isCommented ? "italic" : "lighter",
+                      fontWeight:
+                        isSelected && !movingNode ? "normal" : "lighter",
+                      color:
+                        movingNode && !isDirectory
+                          ? "#999"
+                          : isCommented
+                          ? "gray"
+                          : "#000",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {arboristNode.order ? arboristNode.order * 0.1 + ". " : ""}
+                    {arboristNode.nodename
+                      ? arboristNode.nodename
+                      : arboristNode.name}
+                  </span>
+                </div>
 
-              {/* Contenedor de botones - lado derecho */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "2px",
-                  flexShrink: 0, // Evita que los botones se compriman
-                  marginLeft: "auto", // Empuja los botones hacia la derecha
-                }}
-              >
-                {/* Botón crear directorio */}
-                {isDirectory &&
-                  isSelected &&
-                  !movingNode &&
-                  arboristNode.ableMkdir && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCreateDirectory(arboristNode);
-                      }}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        padding: "2px",
-                      }}
-                    >
-                      ➕📁
-                    </button>
-                  )}
-                {/* Botón crear archivo */}
-                {isDirectory &&
-                  isSelected &&
-                  !movingNode &&
-                  isChapterOrAppendix && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCreate();
-                      }}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        padding: "2px",
-                      }}
-                    >
-                      ➕📄
-                    </button>
-                  )}
-                {/* Botón subir capítulo */}
-                {isFile &&
-                  isSelected &&
-                  !isFirstChapter &&
-                  isChapterOrAppendix && (
-                    <Tooltip content="Subir capítulo" position="top">
-                      <button
-                        style={{
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                          padding: "2px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleReorder("up", arboristNode);
-                        }}
-                      >
-                        🔼
-                      </button>
-                    </Tooltip>
-                  )}
-
-                {/* Botón bajar capítulo */}
-                {isFile && isSelected && isChapterOrAppendix && (
-                  <Tooltip content="Bajar capítulo">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleReorder("down", arboristNode);
-                      }}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        padding: "2px",
-                      }}
-                    >
-                      🔽
-                    </button>
-                  </Tooltip>
-                )}
-
-                {/* Botón comentar capítulo */}
-                {isFile &&
-                  isSelected &&
-                  isChapterOrAppendix &&
-                  !isCommented && (
-                    <Tooltip content="Comentar capítulo">
+                {/* Contenedor de botones - lado derecho */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "2px",
+                    flexShrink: 0, // Evita que los botones se compriman
+                    marginLeft: "auto", // Empuja los botones hacia la derecha
+                  }}
+                >
+                  {/* Botón crear directorio */}
+                  {isDirectory &&
+                    isSelected &&
+                    !movingNode &&
+                    arboristNode.ableMkdir && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          // alert(`Comentar capítulo ${treeitem.name}`);
+                          handleCreateDirectory(arboristNode);
                         }}
                         style={{
                           background: "none",
@@ -550,118 +493,213 @@ function TreeComponent(): JSX.Element {
                           padding: "2px",
                         }}
                       >
-                        🟥
+                        ➕📁
+                      </button>
+                    )}
+                  {/* Botón crear archivo */}
+                  {isDirectory &&
+                    isSelected &&
+                    !movingNode &&
+                    isChapterOrAppendix && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCreate();
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          padding: "2px",
+                        }}
+                      >
+                        ➕📄
+                      </button>
+                    )}
+                  {/* Botón subir capítulo */}
+                  {isFile &&
+                    isSelected &&
+                    !isFirstChapter &&
+                    isChapterOrAppendix && (
+                      <Tooltip content="Subir capítulo" position="top">
+                        <button
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            padding: "2px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReorder("up", arboristNode);
+                          }}
+                        >
+                          🔼
+                        </button>
+                      </Tooltip>
+                    )}
+
+                  {/* Botón bajar capítulo */}
+                  {isFile && isSelected && isChapterOrAppendix && (
+                    <Tooltip content="Bajar capítulo">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleReorder("down", arboristNode);
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          padding: "2px",
+                        }}
+                      >
+                        🔽
                       </button>
                     </Tooltip>
                   )}
 
-                {/* Botón des-comentar capítulo */}
-                {isFile && isSelected && isChapterOrAppendix && isCommented && (
-                  <Tooltip content="Des-comentar\ncapítulo">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // alert(`Des-comentar capítulo ${treeitem.name}`);
-                      }}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        padding: "2px",
-                      }}
-                    >
-                      🟩
-                    </button>
-                  </Tooltip>
-                )}
+                  {/* Botón comentar capítulo */}
+                  {isFile &&
+                    isSelected &&
+                    isChapterOrAppendix &&
+                    !isCommented && (
+                      <Tooltip content="Comentar capítulo">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // alert(`Comentar capítulo ${treeitem.name}`);
+                          }}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            padding: "2px",
+                          }}
+                        >
+                          🟥
+                        </button>
+                      </Tooltip>
+                    )}
 
-                {/* Botón deseleccionar */}
-                {isSelected && (
-                  <Tooltip content="Deseleccionar">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deselectAll(e);
-                        setMovingNode(null);
-                      }}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        padding: "2px",
-                      }}
-                    >
-                      ❌
-                    </button>
-                  </Tooltip>
-                )}
+                  {/* Botón des-comentar capítulo */}
+                  {isFile &&
+                    isSelected &&
+                    isChapterOrAppendix &&
+                    isCommented && (
+                      <Tooltip content="Des-comentar\ncapítulo">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // alert(`Des-comentar capítulo ${treeitem.name}`);
+                          }}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            padding: "2px",
+                          }}
+                        >
+                          🟩
+                        </button>
+                      </Tooltip>
+                    )}
 
-                {/* Dropdown menu */}
-                {isSelected && (
-                  <DropDownMenu
-                    options={[
-                      {
-                        operation: "download",
-                        label: "Download",
-                        icon: "⬇️",
-                        onClick: () => handleDownload(arboristNode),
-                      },
-                      {
-                        operation: "rename",
-                        label: "Rename",
-                        icon: "✏️",
-                        disabled: isSelected && !isRestricted && !movingNode,
-                        onClick: () => handleRename(arboristNode),
-                      },
-                      {
-                        operation: "move",
-                        label: "Move",
-                        icon: "Ⓜ️",
-                        disabled: isSelected && !isRestricted && !movingNode,
-                        onClick: () => {
-                          if (isFile) {
-                            setMovingNode((prev) => {
-                              if (prev?.id !== arboristNode.id) {
-                                return arboristNode;
-                              }
-                              return prev;
-                            });
-                          }
+                  {/* Botón deseleccionar */}
+                  {isSelected && (
+                    <Tooltip content="Deseleccionar">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deselectAll(e);
+                          setMovingNode(null);
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          padding: "2px",
+                        }}
+                      >
+                        ❌
+                      </button>
+                    </Tooltip>
+                  )}
+
+                  {/* Dropdown menu */}
+                  {isSelected && (
+                    <DropDownMenu
+                      options={[
+                        {
+                          operation: "download",
+                          label: "Download",
+                          icon: "⬇️",
+                          onClick: () => handleDownload(arboristNode),
                         },
-                      },
-                      {
-                        operation: "delete",
-                        label: "Delete",
-                        icon: "🗑️",
-                        disabled: isSelected && !isRestricted && !movingNode,
-                        onClick: () => handleDelete(arboristNode),
-                      },
-                      {
-                        operation: "info",
-                        label: "Info",
-                        icon: "ℹ️",
-                        disabled: isSelected && isFile,
-                        onClick: () => {
-                          alert(
-                            `Info:\n
-                              -${arboristNode.name}\n
-                              -${arboristNode.metadata.path}\n
-                              -${arboristNode.metadata.nodetype}\n
-                              -${arboristNode.order}
-                              `
-                          );
+                        {
+                          operation: "rename",
+                          label: "Rename",
+                          icon: "✏️",
+                          disabled: isSelected && !isRestricted && !movingNode,
+                          onClick: () => handleRename(arboristNode),
                         },
-                      },
-                    ]}
-                  />
-                )}
+                        {
+                          operation: "move",
+                          label: "Move",
+                          icon: "Ⓜ️",
+                          disabled: isSelected && !isRestricted && !movingNode,
+                          onClick: () => {
+                            if (isFile) {
+                              setMovingNode((prev) => {
+                                if (prev?.id !== arboristNode.id) {
+                                  return arboristNode;
+                                }
+                                return prev;
+                              });
+                            }
+                          },
+                        },
+                        {
+                          operation: "delete",
+                          label: "Delete",
+                          icon: "🗑️",
+                          disabled: isSelected && !isRestricted && !movingNode,
+                          onClick: () => handleDelete(arboristNode),
+                        },
+                        {
+                          operation: "info",
+                          label: "Info",
+                          icon: "ℹ️",
+                          disabled: isSelected && isFile,
+                          onClick: () => {
+                            alert(
+                              `Info:\n
+                                -${arboristNode.name}\n
+                                -${arboristNode.metadata.path}\n
+                                -${arboristNode.metadata.nodetype}\n
+                                -${arboristNode.order}
+                                `
+                            );
+                          },
+                        },
+                      ]}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        }}
-      </Tree>
+            );
+          }}
+        </Tree>
+      </div>
     </div>
   );
 }

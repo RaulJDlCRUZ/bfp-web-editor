@@ -1,4 +1,4 @@
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "./axios/apiInstance";
 
 function validateExpression(expression: string): boolean {
   const regex = /^[a-zA-Z0-9_\-\.]+$/;
@@ -23,7 +23,7 @@ export function checkDirectoryName(directory: string): string {
   return directory;
 }
 
-export async function fetchFiles(): Promise<any> {
+export async function fetchFileListing(): Promise<any> {
   try {
     const response = await axiosInstance.get("/files");
     if (!response || (response && !response.data))

@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import axiosInstance from "@/services/axiosInstance";
+import axiosInstance from "@/services/axios/apiInstance";
 import { ArboristNode } from "@/common/types";
 
 export interface FileExplorerContextType {
@@ -29,14 +29,25 @@ export const FileExplorerProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
 
     try {
-      const queryPath: string = node.metadata.path.split("input/")[1];
-      // const response = await axiosInstance.get(`/files/${node.data.path}`);
-      const response = await axiosInstance.get(`/files/${queryPath}`);
-      if (!response) {
-        throw new Error("Error fetching file content");
+      // If the node selected is the config file, we need to handle it differently
+      if (node.metadata.name === "config.yaml") {
+        const response = await axiosInstance.get("/config");
+        if (!response) {
+          throw new Error("Error fetching file content");
+        }
+        const content = await response.data;
+        setFileContent(content);
+        return;
+      } else {
+        const queryPath: string = node.metadata.path.split("input/")[1];
+        // const response = await axiosInstance.get(`/files/${node.data.path}`);
+        const response = await axiosInstance.get(`/files/${queryPath}`);
+        if (!response) {
+          throw new Error("Error fetching file content");
+        }
+        const content = await response.data;
+        setFileContent(content);
       }
-      const content = await response.data;
-      setFileContent(content);
     } catch (error) {
       console.error("Error fetching file content:", error);
       setFileContent("");

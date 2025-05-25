@@ -55,9 +55,6 @@ function isAbleToCreateDirectory(type: string, nodePath: string): boolean {
 
 // otra func, sobre transformToArborist <--- SEA LA QUE SE VEA EN EL CLIENTE
 
-// Create an ArboristNode from the config file
-// export function retrieveConfigAsNode(): ArboristNode {}
-
 
 // Función recursiva para transformar el árbol de backend a formato Arborist
 export function transformToArborist(
@@ -90,7 +87,9 @@ export function transformToArborist(
   return {
     id,
     name: node.name,
-    nodename: nodetype.includes("setup") ? prettySetupFiles[nodePath] : node.friendlyname,
+    nodename: nodetype.includes("setup")
+      ? prettySetupFiles[nodePath]
+      : node.friendlyname,
     nodetype: nodetype,
     order: node.order ?? null,
     restricted: isRestricted(nodeType, nodePath),
