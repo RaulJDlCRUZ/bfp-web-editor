@@ -66,10 +66,15 @@ export async function uploadFile(file: File): Promise<void> {
   }
 }
 
-export async function createFile(filename: string): Promise<void> {
+export async function createFile(
+  filename: string,
+  new_element: string
+): Promise<void> {
   try {
     const checkedFileName: string = checkFileName(String(filename));
-    const response = await axiosInstance.post(`/files/${checkedFileName}`);
+    const response = await axiosInstance.post(`/files/${checkedFileName}`, {
+      mode: new_element,
+    });
     if (!response.data || !response.data.success) {
       throw new Error("Error al crear el archivo");
     }

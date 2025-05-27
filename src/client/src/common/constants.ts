@@ -20,13 +20,13 @@ export const fileIcons: { [extension: string]: string } = {
 
 // For every admitted image extension, maps its corresponding render type (Tailwind CSS)
 export const imageExtensions: { [extension: string]: string } = {
-  "jpg": "image-render-auto",
-  "jpeg": "image-render-auto",
-  "png": "image-render-pixel",
-  "gif": "image-render-auto",
-  "svg": "image-render-auto",
-  "bmp": "image-render-crisp",
-}
+  jpg: "image-render-auto",
+  jpeg: "image-render-auto",
+  png: "image-render-pixel",
+  gif: "image-render-auto",
+  svg: "image-render-auto",
+  bmp: "image-render-crisp",
+};
 
 // This dictionary specifies which files are restricted but can be edited
 // According to: https://www.felixalbertos.com/resources/downloads/tfg_template.html
@@ -71,14 +71,14 @@ export const allowNewDirectories: { [directory: string]: boolean } = {
   "input/resources/images": true,
 };
 
-// CSL files that are not shown in the file explorer
+// CSL files that are not shown in the file explorer UNUSED!!!!
 export const hideCSL: { [extension: string]: boolean } = {
   "input/resources/csl/acm-sig-proceedings.csl": true,
   "input/resources/csl/iso690-author-date-cs.csl": true,
   "input/resources/csl/iso690-numeric-en.csl": true,
 };
 
-// Directories that are not shown in the file explorer
+// Directories that are not shown in the file explorer UNUSED!!!!
 export const hideDirectories: { [directory: string]: boolean } = {
   "input/": true,
   "input/resources/bibliography": true,
@@ -95,4 +95,18 @@ export const prettySetupFiles: { [extension: string]: string } = {
   "input/authorship.md": "Authorship",
   "input/dedication.md": "Dedication",
   "input/resumen.md": "Summary (ES)",
+};
+
+// Diccionario que define el orden de los nodos en el cliente
+export const nodeOrder: { [nodetype: string]: number } = {
+  dedication: 10,
+  authorship: 20,
+  resumen: 30,
+  abstract: 40,
+  acknowledgements: 50,
+  acronyms: 60,
+  chapters: 100,
+  appendices: 200,
+  bibliography: 1000,
+  resources: 2000,
 };

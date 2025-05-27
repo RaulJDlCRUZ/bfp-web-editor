@@ -3,7 +3,7 @@ import { NodeApi, Tree, TreeApi } from "react-arborist";
 import { ArboristNode } from "@/common/types";
 import { fileIcons } from "@/common/constants";
 import { useFileExplorerContext } from "@/hooks/FileExplorerHook";
-import { transformToArborist } from "@/services/treeConversion";
+import { SimplifyTree, transformToArborist } from "@/services/treeConversion";
 import {
   createFile,
   downloadFile,
@@ -26,22 +26,25 @@ function TreeComponent(): JSX.Element {
   const treeRef = useRef<TreeApi<ArboristNode>>(null);
   const { selectNode } = useFileExplorerContext();
 
-  function getNodeCount(firstnode: ArboristNode): number {
+  function getNodeCount(tree: ArboristNode[]): number {
     let count = 0;
-    if (firstnode.children) {
-      for (const child of firstnode.children) {
-        count += getNodeCount(child);
+    for (const node of tree) {
+      if (node.children) {
+        count += getNodeCount(node.children);
       }
+      count += 1; // Contar el nodo actual
     }
-    return count + 1; // Contar el nodo actual
+    return count;
   }
 
   async function fetchTree(): Promise<void> {
     try {
       const data = await fetchFileListing();
-      const transformed = transformToArborist(data);
-      setTreeData([transformed]);
-      setNodeCount(getNodeCount(transformed));
+      const transformed = SimplifyTree(transformToArborist(data));
+      setTreeData(transformed);
+      const node_c = getNodeCount(transformed);
+      setNodeCount(node_c);
+      console.log(node_c);
     } catch (error) {
       console.error("Error al cargar el árbol:", error);
     }
@@ -255,7 +258,7 @@ function TreeComponent(): JSX.Element {
     }
   }
 
-  async function handleCreate(): Promise<void> {
+  async function handleCreate(new_element: string): Promise<void> {
     const filename = window.prompt("Enter the name of the new file:");
     if (!filename || filename.trim() === "") {
       alert("File name cannot be empty");
@@ -263,7 +266,7 @@ function TreeComponent(): JSX.Element {
     }
     try {
       // TODO: when adding file, consider matching folder
-      const result = await createFile(filename);
+      const result = await createFile(filename, new_element);
       console.log(result);
       alert(`Archivo ${filename} creado con éxito`);
       await fetchTree();
@@ -458,7 +461,11 @@ function TreeComponent(): JSX.Element {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {arboristNode.order ? arboristNode.order * 0.1 + ". " : ""}
+                    {arboristNode.order
+                      ? (arboristNode.nodetype === "appendix"
+                          ? String.fromCharCode(64 + arboristNode.order * 0.1) // Obtengo la letra correspondiente
+                          : arboristNode.order * 0.1) + ". "
+                      : ""}
                     {arboristNode.nodename
                       ? arboristNode.nodename
                       : arboristNode.name}
@@ -504,7 +511,11 @@ function TreeComponent(): JSX.Element {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleCreate();
+                          if (arboristNode.name.includes("chapters")) {
+                            handleCreate("chapters");
+                          } else {
+                            handleCreate("appendices");
+                          }
                         }}
                         style={{
                           background: "none",

@@ -26,7 +26,11 @@ function TextArea(): JSX.Element {
     if (selectedNode) {
       setFilename(
         `${
-          selectedNode.order ? ` ${0.1 * selectedNode.order + "."}` : ""
+          selectedNode.order
+            ? (selectedNode.nodetype === "appendix"
+                ? String.fromCharCode(64 + selectedNode.order * 0.1) // Obtengo la letra correspondiente
+                : selectedNode.order * 0.1) + ". "
+            : ""
         } ${selectedNode.nodename}` || ""
       );
       if (
@@ -38,6 +42,7 @@ function TextArea(): JSX.Element {
         setContent(
           "Los documentos PDF no están disponibles para su previsualización. Por favor, descargue el archivo para verlo."
         );
+        setFilename(`${selectedNode.metadata.name}`);
       }
     }
   }, [fileContent, selectedNode]);

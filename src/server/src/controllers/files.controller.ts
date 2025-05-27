@@ -116,6 +116,20 @@ export function uploadFile(req: Request, res: Response) {
     }
     if (req.file) {
       console.log(`${req.file.filename} uploaded successfully`);
+      // TODO: Handle metadata for database
+      // Moving the file into the images folder
+      const movedFilePath = path.join(
+        folderPath,
+        "resources",
+        "images",
+        req.file.filename
+      );
+      fs.rename(req.file.path, movedFilePath, (err) => {
+        if (err) {
+          return res.status(500).json({ error: "Error while moving the file" });
+        }
+        console.log(`File moved to ${movedFilePath}`);
+      });
     } else {
       console.log("No file uploaded");
     }
@@ -199,7 +213,9 @@ export function makeDirectory(req: Request, res: Response) {
 
 export function createFile(req: Request, res: Response) {
   const filename = req.params.filename;
-  const filePath = path.join(folderPath, filename);
+  const dest = req.body.mode;
+
+  const filePath = path.join(folderPath, dest, filename);
 
   // Check if the file already exists
   fs.access(filePath, fs.constants.F_OK, (err) => {
