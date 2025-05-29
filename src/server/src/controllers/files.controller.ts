@@ -291,7 +291,8 @@ export function deleteFile(req: Request, res: Response) {
 }
 
 export function deleteDirectory(req: Request, res: Response) {
-  const dirPath = path.join(folderPath, req.params[0]);
+  const rmPath = req.body.path;
+  const dirPath = path.join(folderPath, rmPath);
 
   // Check if the directory exists
   fs.access(dirPath, fs.constants.F_OK, (err) => {

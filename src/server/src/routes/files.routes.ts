@@ -8,6 +8,7 @@ filesRouter.post("/upload", filesController.uploadFile);
 filesRouter.put("/rename", filesController.renameFile);
 filesRouter.post("/move", filesController.moveFile);
 filesRouter.post("/mkdir", filesController.makeDirectory);
+filesRouter.post("/rmdir", filesController.deleteDirectory);
 filesRouter.post("/:filename", filesController.createFile);
 filesRouter.get("*", filesController.getFile);
 filesRouter.patch("*", filesController.updateFile);

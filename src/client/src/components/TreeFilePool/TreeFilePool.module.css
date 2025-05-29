@@ -1,0 +1,150 @@
+/* --- File Input --- */
+.fileInput {
+  display: none;
+}
+
+/* --- Tree Container --- */
+.treeContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Tool Bar --- */
+.toolBarContainer {
+  display: flex;
+  justify-content: right;
+  align-items: right;
+  width: auto;
+}
+
+.toolBarButton {
+  background: none;
+  border: none;
+  font-size: 14px;
+  padding: 0px;
+}
+
+.toolBarButtonPointer {
+  cursor: pointer;
+}
+
+.toolBarButtonNotAllowed {
+  cursor: not-allowed;
+}
+/* --- Tree Node --- */
+.treeNode {
+  display: flex;
+  align-items: center;
+  padding-right: 0.5rem;
+  margin: 0;
+  position: relative;
+  border-radius: 1px;
+  user-select: none;
+  font-size: 14px;
+}
+
+/* --- Tree Node Element Background --- */
+.treeNode:hover {
+  background-color: #f0f0f0;
+}
+
+.treeNodeMovingToDirectory {
+  background-color: #d0e7ff;
+}
+
+.treeNodeRestricted {
+  background-color: #ededed;
+}
+
+.treeNodeSelected {
+  background-color: #edffe8;
+}
+
+.treeNodeDefBackground {
+  background-color: transparent;
+}
+
+/* --- Tree Node Cursor Behaviour --- */
+.treeNodeButtonPointer {
+  cursor: pointer;
+}
+
+.treeNodeButtonNotAllowed {
+  cursor: not-allowed;
+}
+
+/* --- Tree Item --- */
+
+.treeItemContent {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0; /* Ensures text truncation works */
+}
+
+.treeItemIcon {
+  margin-right: 0.5rem;
+  flex-shrink: 0; /* Prevents icon from resizing */
+}
+
+/* --- Tree Item Text --- */
+
+.treeItemText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.treeItemTextDecorationCommented {
+  text-decoration: line-through;
+}
+
+.treeItemTextDecStandard {
+  text-decoration: none;
+}
+
+.treeItemFontCommented {
+  font-style: italic;
+}
+
+.treeItemFontStandard {
+  font-style: normal;
+}
+
+.treeItemFontWeightSelected {
+  font-weight: normal;
+}
+
+.treeItemFontWeightNS {
+  font-weight: lighter;
+}
+
+.treeItemFontColorMoving {
+  color: #999;
+}
+.treeItemFontColorCommented {
+  color: gray;
+}
+
+.treeItemFontColorStandard {
+  color: #000;
+}
+
+/* --- Tree Item Buttons --- */
+
+.treeItemButtonContainer {
+  display: flex;
+  align-items: center;
+  gap: 2px; /* Removed quotes around value */
+  flex-shrink: 0; /* Prevents buttons from shrinking */
+  margin-left: auto; /* Pushes buttons to the right */
+}
+
+.treeItemIconButton {
+  background: none;
+  border: none;
+  padding: 2px;
+  font-size: 12px;
+  cursor: pointer;
+}

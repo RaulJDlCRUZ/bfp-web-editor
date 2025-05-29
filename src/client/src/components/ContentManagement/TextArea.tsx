@@ -23,7 +23,7 @@ function TextArea(): JSX.Element {
   }
 
   useEffect(() => {
-    if (selectedNode) {
+    if (selectedNode && selectedNode.nodetype !== "directory") {
       setFilename(
         `${
           selectedNode.order

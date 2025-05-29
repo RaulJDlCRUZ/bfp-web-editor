@@ -1,7 +1,6 @@
 /* Adapted from: https://tailwindcss.com/plus/ui-blocks/application-ui/elements/dropdowns */
 import { useState, JSX } from "react";
-
-import { DropDownMenuProps } from "@/common/types";
+import { DropDownMenuProps } from "@/common/props";
 
 function DropDownMenu({ options }: DropDownMenuProps): JSX.Element {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -48,7 +47,8 @@ function DropDownMenu({ options }: DropDownMenuProps): JSX.Element {
           <div className="py-1" role="none">
             {options
               .filter(
-                (option) => option.operation === "download" || option.disabled
+                // (option) => option.operation === "download" || option.disabled
+                (option) => option.disabled
               )
               .map((option, index) => (
                 <div

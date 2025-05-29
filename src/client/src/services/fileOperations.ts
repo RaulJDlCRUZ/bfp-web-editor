@@ -9,10 +9,6 @@ export function checkFileName(filename: string): string {
   if (!validateExpression(filename)) {
     throw new Error("Nombre de archivo no válido");
   }
-  // Comprobar si tiene extensión, si no, establecer .md por defecto
-  if (!filename.includes(".")) {
-    filename += ".md";
-  }
   return filename;
 }
 
@@ -43,7 +39,7 @@ export async function renameFile(file: string, newName: string): Promise<void> {
       oldFile: trimFile,
       newFilename: checkedName,
     });
-    console.log(`Archivo ${file} renombrado a ${newName}`, response.data);
+    console.log(`Archivo ${file} renombrado a ${checkedName}`, response.data);
   } catch (err) {
     console.error(`Error al renombrar ${file}:`, err);
     throw new Error(`Error al renombrar ${file}`);
@@ -71,7 +67,11 @@ export async function createFile(
   new_element: string
 ): Promise<void> {
   try {
-    const checkedFileName: string = checkFileName(String(filename));
+    let checkedFileName: string = checkFileName(String(filename));
+    // Comprobar si tiene extensión, si no, establecer .md por defecto
+    if (!checkedFileName.includes(".")) {
+      checkedFileName += ".md";
+    }
     const response = await axiosInstance.post(`/files/${checkedFileName}`, {
       mode: new_element,
     });
@@ -147,6 +147,23 @@ export async function deleteFile(filename: string): Promise<void> {
     await axiosInstance.delete(`/files/${trimFile}`);
   } catch (error) {
     console.error(`Error al eliminar archivo ${filename}:`, error);
+    throw error;
+  }
+}
+
+export async function deleteDirectory(directory: string): Promise<void> {
+  try {
+    const trimDir = directory.split("input/")[1] || "./";
+    const response = await axiosInstance.post("/files/rmdir", {
+      path: trimDir,
+    });
+    if (!response.data || !response.data.success) {
+      throw new Error("Error al eliminar el directorio");
+    }
+    console.log(`Directorio ${directory} eliminado`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error al eliminar directorio ${directory}:`, error);
     throw error;
   }
 }

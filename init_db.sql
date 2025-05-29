@@ -94,19 +94,17 @@ CREATE TABLE
     CONSTRAINT tfg_student_fk FOREIGN KEY (student) REFERENCES USERS (user_id) ON UPDATE CASCADE
   );
 
--- Tabla BASIC_INFO (entidad débil)
+-- Tabla BASIC_INFO (entidad débil con dependencia por identificación)
 CREATE TABLE
   BASIC_INFO (
-    cfg_id VARCHAR(16),
-    tfg INTEGER NOT NULL,
+    tfg INTEGER PRIMARY KEY, -- PK heredada del padre (dependencia por identificación)
+    cfg_id VARCHAR(16) NOT NULL, -- Discriminante/atributo adicional
     abstract VARCHAR(1024),
     ack VARCHAR(128),
     autorship VARCHAR(512),
     dedications VARCHAR(128),
     resumen VARCHAR(1024),
-    -- Clave primaria compuesta (entidad débil)
-    CONSTRAINT basic_info_pk PRIMARY KEY (cfg_id, tfg),
-    -- Clave foránea con CASCADE
+    -- Clave foránea con CASCADE (relación 1:1)
     CONSTRAINT basic_info_tfg_fk FOREIGN KEY (tfg) REFERENCES TFG (bfp_id) ON DELETE CASCADE ON UPDATE CASCADE
   );
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CompileButtonProps } from "@/common/types";
+import { CompileButtonProps } from "@/common/props";
 import { fetchDocument, printDocument } from "@/services/documentOperations";
 import styles from "./CompileButton.module.css";
 

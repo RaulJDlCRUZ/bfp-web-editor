@@ -5,7 +5,7 @@ import ResizableSplit from "@/components/Splitter";
 import { FileExplorerProvider } from "@/context/FileExplorerContext";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
-const FileTree = React.lazy(() => import("@/components/TreeFilePool"));
+const FileTree = React.lazy(() => import("@/components/TreeFilePool/TreeFilePool"));
 
 const NewCompilePage: React.FC = () => {
   const [documentData, setDocumentData] = useState<string | null>(null);

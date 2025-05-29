@@ -4,7 +4,7 @@ import TextArea from "@/components/ContentManagement/TextArea";
 import { FileExplorerProvider } from "@/context/FileExplorerContext";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
-const FileTree = React.lazy(() => import("@/components/TreeFilePool"));
+const FileTree = React.lazy(() => import("@/components/TreeFilePool/TreeFilePool"));
 
 const NextCompilePage: React.FC = () => {
   const [documentData, setDocumentData] = useState<string | null>(null);

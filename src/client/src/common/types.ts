@@ -29,29 +29,3 @@ export interface ArboristNode {
   children?: ArboristNode[];
   metadata: TreeNode;
 }
-
-// export interface tfgiiNode {
-//   id: string;
-//   name: string; // Not filename/dirname. This is the name of the node
-//   nodetype: "chapter" | "appendix" | "setup" | "other";
-//   filetype: "file" | "directory";
-//   order: number | null;
-//   metadata: ArboristNode;
-// }
-
-// This interface is used to define the structure of the response from the server when compiling the document
-export interface CompileButtonProps {
-  setDocumentData: (data: string | null) => void;
-}
-
-export interface DropDownOption {
-  operation: "download" | "delete" | "rename" | "move" | "info";
-  label: string;
-  icon: any;
-  onClick: () => void;
-  disabled?: boolean;
-}
-
-export interface DropDownMenuProps {
-  options: DropDownOption[];
-}

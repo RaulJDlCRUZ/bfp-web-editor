@@ -5,7 +5,7 @@ import ContentElector from "@/components/ContentManagement/ContentElector";
 import DocViewer from "@/components/ContentManagement/DocViewer";
 import ResizableSplit from "@/components/Splitter";
 
-const FileTree = React.lazy(() => import("@/components/TreeFilePool"));
+const FileTree = React.lazy(() => import("@/components/TreeFilePool/TreeFilePool"));
 
 function NewCompilePage(): JSX.Element {
   const [documentData, setDocumentData] = useState<string | null>(null);

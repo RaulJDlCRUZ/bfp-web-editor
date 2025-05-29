@@ -71,20 +71,6 @@ export const allowNewDirectories: { [directory: string]: boolean } = {
   "input/resources/images": true,
 };
 
-// CSL files that are not shown in the file explorer UNUSED!!!!
-export const hideCSL: { [extension: string]: boolean } = {
-  "input/resources/csl/acm-sig-proceedings.csl": true,
-  "input/resources/csl/iso690-author-date-cs.csl": true,
-  "input/resources/csl/iso690-numeric-en.csl": true,
-};
-
-// Directories that are not shown in the file explorer UNUSED!!!!
-export const hideDirectories: { [directory: string]: boolean } = {
-  "input/": true,
-  "input/resources/bibliography": true,
-  "input/resources/csl": true,
-};
-
 // ! Probablemennte sea movido o eliminado al implementarse la BD
 export const prettySetupFiles: { [extension: string]: string } = {
   "config.yaml": "Config",
