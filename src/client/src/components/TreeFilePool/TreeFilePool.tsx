@@ -6,6 +6,7 @@ import { useFileExplorerContext } from "@/hooks/FileExplorerHook";
 import { SimplifyTree, transformToArborist } from "@/services/treeConversion";
 import {
   createFile,
+  createFile2,
   downloadFile,
   deleteFile,
   deleteDirectory,
@@ -104,10 +105,15 @@ function TreeComponent(): JSX.Element {
         // node.order ? node.order - 10 : null;
         let prevSlice = prevNode.name.slice(0, 2);
         let newSlice = node.name.slice(0, 2);
-        await renameFile(node.metadata.path, prevSlice + node.name.slice(2));
+        await renameFile(
+          node.metadata.path,
+          prevSlice + node.name.slice(2),
+          null
+        );
         await renameFile(
           prevNode.metadata.path,
-          newSlice + prevNode.name.slice(2)
+          newSlice + prevNode.name.slice(2),
+          null
         );
         // prevNode.order ? prevNode.order + 5 : null;
         // renameFile(prevNode)
@@ -137,10 +143,15 @@ function TreeComponent(): JSX.Element {
         // node.order ? node.order + 10 : null;
         let prevSlice = node.name.slice(0, 2);
         let newSlice = nextNode.name.slice(0, 2);
-        await renameFile(node.metadata.path, newSlice + node.name.slice(2));
+        await renameFile(
+          node.metadata.path,
+          newSlice + node.name.slice(2),
+          null
+        );
         await renameFile(
           nextNode.metadata.path,
-          prevSlice + nextNode.name.slice(2)
+          prevSlice + nextNode.name.slice(2),
+          null
         );
       } catch (error) {
         console.error("Error al mover el archivo:", error);
@@ -172,9 +183,8 @@ function TreeComponent(): JSX.Element {
     }
   }
 
-  async function handleRename(nodeToRename: ArboristNode): Promise<void> {
+  async function handleRenamePrompt(nodeToRename: ArboristNode): Promise<void> {
     if (nodeToRename.restricted) return;
-
     const newName = window.prompt(
       `Renombrar ${nodeToRename.name} a:`,
       nodeToRename.name
@@ -184,15 +194,77 @@ function TreeComponent(): JSX.Element {
       return;
     }
 
+    await handleRename(nodeToRename, newName);
+  }
+
+  async function handleRenameChapOrAppxPrompt(
+    nodeToRename: ArboristNode
+  ): Promise<void> {
+    if (
+      nodeToRename.restricted ||
+      ["chapter", "appendix"].includes(nodeToRename.nodetype)
+    )
+      return;
+    const newName = window.prompt(
+      `Renombrar [${nodeToRename.nodetype}] ${nodeToRename.name} a:`,
+      nodeToRename.name
+    );
+
+    if (!newName || newName.trim() === "" || newName === nodeToRename.name) {
+      return;
+    }
+
+    await RenameChapOrAppx(nodeToRename, newName);
+  }
+
+  async function handleRename(
+    nodeToRename: ArboristNode,
+    newName: string
+  ): Promise<void> {
+    if (nodeToRename.restricted) return;
+
     try {
       const file: string = nodeToRename.metadata.path;
-      await renameFile(file, newName);
+      await renameFile(file, newName, null);
       alert(`Archivo ${nodeToRename.name} renombrado a ${newName}`);
       selectNode(null);
       await fetchTree();
     } catch (err) {
       alert(`Error al renombrar ${nodeToRename.name}`);
       console.error(`Error al renombrar ${nodeToRename.name}:`, err);
+    }
+  }
+
+  async function RenameChapOrAppx(
+    nodeToRename: ArboristNode,
+    newName: string
+  ): Promise<void> {}
+
+  async function handleComment(nodeToComm: ArboristNode): Promise<void> {
+    if (nodeToComm.restricted) return;
+
+    try {
+      const file: string = nodeToComm.metadata.path;
+      await renameFile(file, nodeToComm.name, "comment");
+      await fetchTree();
+      selectNode(null);
+    } catch (error) {
+      alert(`Error al comentar ${nodeToComm.name}`);
+      console.error(`Error al comentar ${nodeToComm.name}:`, error);
+    }
+  }
+
+  async function handleUnComment(nodeToUnComm: ArboristNode): Promise<void> {
+    if (nodeToUnComm.restricted) return;
+
+    try {
+      const file: string = nodeToUnComm.metadata.path;
+      await renameFile(file, nodeToUnComm.name, "uncomment");
+      selectNode(null);
+      await fetchTree();
+    } catch (error) {
+      alert(`Error al des-comentar ${nodeToUnComm.name}`);
+      console.error(`Error al des-comentar ${nodeToUnComm.name}:`, error);
     }
   }
 
@@ -254,6 +326,24 @@ function TreeComponent(): JSX.Element {
     } catch (err) {
       alert(`Error al crear ${dirName}`);
       console.error(`Error al crear ${dirName}:`, err);
+    }
+  }
+
+  async function handleCreateFile2(new_element: string): Promise<void> {
+    const filename = window.prompt(`Enter the name of the new ${new_element}:`);
+    if (!filename || filename.trim() === "") {
+      alert("File name cannot be empty");
+      return;
+    }
+
+    try {
+      const result = await createFile2(filename, new_element);
+      console.log(result);
+      alert(`Archivo ${filename} creado con éxito`);
+      await fetchTree();
+    } catch (err) {
+      alert(`Error al crear ${filename}`);
+      console.error(`Error al crear ${filename}:`, err);
     }
   }
 
@@ -472,9 +562,9 @@ function TreeComponent(): JSX.Element {
                         onClick={(e) => {
                           e.stopPropagation();
                           if (arboristNode.name.includes("chapters")) {
-                            handleCreateFile("chapters");
+                            handleCreateFile2("chapters");
                           } else {
-                            handleCreateFile("appendices");
+                            handleCreateFile2("appendices");
                           }
                         }}
                       >
@@ -525,6 +615,8 @@ function TreeComponent(): JSX.Element {
                           onClick={(e) => {
                             e.stopPropagation();
                             // alert(`Comentar capítulo ${treeitem.name}`);
+                            // handleRename(arboristNode, arboristNode.name.replace(/^\d{2}/, "XX"));
+                            handleComment(arboristNode);
                           }}
                         >
                           🟥
@@ -542,7 +634,9 @@ function TreeComponent(): JSX.Element {
                           className={styles.treeItemIconButton}
                           onClick={(e) => {
                             e.stopPropagation();
+                            // TODO: crear funciones intermedias para que se asigne el último número de capítulo EN BACKEND
                             // alert(`Des-comentar capítulo ${treeitem.name}`);
+                            handleUnComment(arboristNode);
                           }}
                         >
                           🟩
@@ -606,7 +700,7 @@ function TreeComponent(): JSX.Element {
                           label: "Rename",
                           icon: "✏️",
                           disabled: isSelected && !isRestricted && !movingNode,
-                          onClick: () => handleRename(arboristNode),
+                          onClick: () => handleRenamePrompt(arboristNode),
                         },
                         {
                           operation: "move",

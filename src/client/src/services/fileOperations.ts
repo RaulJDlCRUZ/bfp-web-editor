@@ -31,13 +31,22 @@ export async function fetchFileListing(): Promise<any> {
   }
 }
 
-export async function renameFile(file: string, newName: string): Promise<void> {
+export async function renameFile(
+  file: string,
+  newName: string,
+  mode: "comment" | "uncomment" | null
+): Promise<void> {
   try {
-    const checkedName: string = checkFileName(String(newName));
+    // If the new name does not changes, we do not need to rename
+    const checkedName: string =
+      file.split("/").slice(-1)[0] === newName
+        ? newName
+        : checkFileName(String(newName));
     const trimFile = file.split("input/")[1];
     const response = await axiosInstance.put("/files/rename", {
       oldFile: trimFile,
       newFilename: checkedName,
+      mode: mode,
     });
     console.log(`Archivo ${file} renombrado a ${checkedName}`, response.data);
   } catch (err) {
@@ -81,6 +90,41 @@ export async function createFile(
     return response.data;
   } catch (error) {
     console.error(`Error al crear archivo ${filename}:`, error);
+    throw error;
+  }
+}
+
+export async function createFile2(
+  name: string,
+  new_element: string
+): Promise<void> {
+  try {
+    let checkedFileName: string = checkFileName(
+      String(name).replace(/ /g, "").toLocaleLowerCase()
+    );
+
+    // Comprobar si tiene extensión, si no, establecer .md por defecto
+    if (!checkedFileName.includes(".")) {
+      checkedFileName += ".md";
+    }
+    const response = await axiosInstance.post(`/files/${checkedFileName}`, {
+      mode: new_element,
+    });
+    if (!response.data || !response.data.success) {
+      throw new Error("Error al crear el archivo");
+    }
+
+    // En este punto el archivo se ha creado, ahora vamos a agregarle su título
+    const { filename: queryPath } = response.data;
+    const newContent = "# " + name;
+
+    await axiosInstance.patch(`/files/${new_element}/${queryPath}`, {
+      content: newContent,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(`Error al ${name}:`, error);
     throw error;
   }
 }
@@ -168,8 +212,8 @@ export async function deleteDirectory(directory: string): Promise<void> {
   }
 }
 
-export function upElement(): void {
-  // TODO:
-}
+// export function upElement(): void {
+//   // TODO:
+// }
 
 // TODO: Remove Directory

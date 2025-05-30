@@ -4,8 +4,8 @@ import * as filesController from "../controllers/files.controller.js";
 const filesRouter: Router = Router();
 
 filesRouter.get("/", filesController.getAllFiles);
-filesRouter.post("/upload", filesController.uploadFile);
 filesRouter.put("/rename", filesController.renameFile);
+filesRouter.post("/upload", filesController.uploadFile);
 filesRouter.post("/move", filesController.moveFile);
 filesRouter.post("/mkdir", filesController.makeDirectory);
 filesRouter.post("/rmdir", filesController.deleteDirectory);

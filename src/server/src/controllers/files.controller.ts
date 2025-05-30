@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import multer, { StorageEngine } from "multer";
 import { folderPath } from "../index.js";
+import { checkLastChapOrAppx } from "../utils/checkLastChapOrAppx.js";
 
 const storage: StorageEngine = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -28,6 +29,32 @@ function extractOrder(filename: string): number {
   if (isNaN(order)) return 0;
   // console.log("ORDER->", filename, slice, order);
   return 10 * order;
+}
+
+function addPrefixToFilename(
+  filename: string,
+  mode: "comment" | "uncomment",
+  dest: "appendices" | "chapters"
+): string {
+  if (mode === "comment") {
+    // For comments, replace the first two characters of the filename with "XX"
+    return `XX${filename.slice(2)}`;
+  }
+
+  // Check the last chapter or appendix number
+  let prefix: string[2] = "XX";
+  let last = checkLastChapOrAppx(dest);
+
+  switch (last) {
+    case null:
+      prefix = "01"; // If no chapters or appendices exist, start with 01
+      break;
+    default:
+      prefix = last < 10 ? `0${last}` : `${last}`; // Ensure two-digit format
+      break;
+  }
+
+  return `${prefix}${filename.slice(2)}`;
 }
 
 /*
@@ -139,7 +166,33 @@ export function uploadFile(req: Request, res: Response) {
 
 export function renameFile(req: Request, res: Response) {
   const oldFile = req.body.oldFile; // path
-  const newFilename = req.body.newFilename;
+  let newFilename = req.body.newFilename;
+  const mode = req.body.mode; // comment | uncomment | null
+
+  switch (mode) {
+    case null:
+      break;
+    default:
+      const dest =
+        oldFile.split("/")[0] === "chapters" ? "chapters" : "appendices"; // chapters or appendices
+      if (mode === "comment") {
+        // If commenting, we add the prefix to the filename
+        newFilename = addPrefixToFilename(
+          newFilename,
+          mode,
+          dest as "appendices" | "chapters"
+        );
+      } else {
+        // If uncommenting, we add the prefix to the filename
+        newFilename = addPrefixToFilename(
+          newFilename,
+          mode,
+          dest as "appendices" | "chapters"
+        );
+      }
+      break;
+  }
+
   const oldFilePath = path.join(folderPath, oldFile);
   const newFilePath = path.join(folderPath, oldFile, "..", newFilename);
   // Check if the file exists
@@ -190,44 +243,34 @@ export function moveFile(req: Request, res: Response) {
   });
 }
 
-export function makeDirectory(req: Request, res: Response) {
-  const dirName = req.body.name;
-  const basepath = req.body.path ? req.body.path : "./";
-  const dirPath = path.join(folderPath, basepath, dirName);
-
-  // Check if the directory already exists
-  fs.access(dirPath, fs.constants.F_OK, (err) => {
-    if (!err) {
-      return res.status(400).json({ error: "Directory already exists" });
-    }
-    fs.mkdir(dirPath, { recursive: true }, (err) => {
-      if (err) {
-        return res
-          .status(500)
-          .json({ error: "Error while creating the directory" });
-      }
-      res.json({ success: true, message: `${dirName} created successfully` });
-    });
-  });
-}
-
 export function createFile(req: Request, res: Response) {
   const filename = req.params.filename;
-  const dest = req.body.mode;
+  const dest = req.body.mode; // chapters or appendices
+  // const filePath = path.join(folderPath, dest, filename);
 
-  const filePath = path.join(folderPath, dest, filename);
+  // Prepend the prefix to the filename
+  const prefixedFilename = addPrefixToFilename(
+    filename,
+    req.body.mode,
+    dest as "appendices" | "chapters"
+  );
+  const filePathWithPrefix = path.join(folderPath, dest, prefixedFilename);
 
   // Check if the file already exists
-  fs.access(filePath, fs.constants.F_OK, (err) => {
+  fs.access(filePathWithPrefix, fs.constants.F_OK, (err) => {
     if (!err) {
       return res.status(400).json({ error: "File already exists" });
     }
     // Create the file with empty content
-    fs.writeFile(filePath, "", (err) => {
+    fs.writeFile(filePathWithPrefix, "", (err) => {
       if (err) {
         return res.status(500).json({ error: "Error while creating the file" });
       }
-      res.json({ success: true, message: `${filename} created successfully` });
+      res.json({
+        success: true,
+        message: `${filename} created successfully`,
+        filename: prefixedFilename,
+      });
     });
   });
 }
@@ -287,6 +330,27 @@ export function deleteFile(req: Request, res: Response) {
       return res.status(500).json({ error: "Error while removing the file" });
     }
     res.json({ success: true, message: `${filePath} removed successfully` });
+  });
+}
+
+export function makeDirectory(req: Request, res: Response) {
+  const dirName = req.body.name;
+  const basepath = req.body.path ? req.body.path : "./";
+  const dirPath = path.join(folderPath, basepath, dirName);
+
+  // Check if the directory already exists
+  fs.access(dirPath, fs.constants.F_OK, (err) => {
+    if (!err) {
+      return res.status(400).json({ error: "Directory already exists" });
+    }
+    fs.mkdir(dirPath, { recursive: true }, (err) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "Error while creating the directory" });
+      }
+      res.json({ success: true, message: `${dirName} created successfully` });
+    });
   });
 }
 
