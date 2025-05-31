@@ -1,11 +1,14 @@
 import { spawn } from "child_process";
 import { Request, Response } from "express";
 import path from "path";
-import { outputPath } from "../index.js";
+import { folderPath, outputPath } from "../index.js";
+import { forceNewLine } from "../utils/forceNewLine.js";
 
 const file = process.env.RESFILENAMEDEF || "tfgii.pdf";
 
 export function compileDocument(req: Request, res: Response) {
+  // Before compiling, add new line to the acronyms file (PENDING TEMPLATE FIX)
+  forceNewLine(path.join(folderPath, "acronyms.md"));
   console.debug("Starting make process...");
   const dir = process.env.MAKEPATH || "makefiles";
   const proc = spawn("make", [], {

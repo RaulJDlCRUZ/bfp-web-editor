@@ -58,7 +58,8 @@
 }
 
 .treeNodeSelected {
-  background-color: #edffe8;
+  /* background-color: #edffe8; */
+  background-color: #ededed;
 }
 
 .treeNodeDefBackground {
@@ -123,12 +124,17 @@
 .treeItemFontColorMoving {
   color: #999;
 }
+
 .treeItemFontColorCommented {
   color: gray;
 }
 
 .treeItemFontColorStandard {
   color: #000;
+}
+
+.treeItemFontColorSelected {
+  color: #1a7900;
 }
 
 /* --- Tree Item Buttons --- */

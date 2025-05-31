@@ -6,10 +6,13 @@ function validateExpression(expression: string): boolean {
 }
 
 export function checkFileName(filename: string): string {
-  if (!validateExpression(filename)) {
+  const normalizedFilename = filename
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // Remove accents
+  if (!validateExpression(normalizedFilename)) {
     throw new Error("Nombre de archivo no válido");
   }
-  return filename;
+  return normalizedFilename;
 }
 
 export function checkDirectoryName(directory: string): string {
@@ -31,6 +34,57 @@ export async function fetchFileListing(): Promise<any> {
   }
 }
 
+export async function renameChapterOrAppendix(
+  file: string,
+  newTitle: string
+): Promise<void> {
+  try {
+    const trimFile = file.split("input/")[1];
+    // Construct the new file name considering the actual order
+    let newFileName = checkFileName(
+      String(newTitle).replace(/ /g, "").toLocaleLowerCase()
+    );
+
+    // Comprobar si tiene extensión, si no, establecer .md por defecto
+    if (!newFileName.includes(".")) {
+      newFileName += ".md";
+    }
+
+    const prefix = trimFile.split("/").slice(-1)[0].slice(0, 3);
+    newFileName = prefix + newFileName;
+
+    await renameFile(file, newFileName, null);
+
+    console.log(`Capítulo o apéndice ${file} renombrado a ${newTitle}`);
+
+    // Now, when file is renamed, we can update the content of the NEW file (only line with # )
+    const header = `# ${newTitle}`;
+    const filePath = trimFile
+      .split("/")
+      .slice(0, -1)
+      .concat(newFileName)
+      .join("/");
+
+    const content = await axiosInstance.get(`/files/${filePath}`);
+    if (!content || !content.data) {
+      throw new Error("Error al obtener el contenido del archivo");
+    }
+
+    const updatedContent = content.data.replace(/^# .*/m, header);
+
+    await axiosInstance.patch(`/files/${filePath}`, {
+      content: updatedContent,
+    });
+
+    console.log(
+      `Capítulo o apéndice ${file} actualizado con nuevo título: ${newTitle}`
+    );
+  } catch (err) {
+    console.error(`Error al renombrar ${file}:`, err);
+    throw new Error(`Error al renombrar ${file}`);
+  }
+}
+
 export async function renameFile(
   file: string,
   newName: string,
@@ -43,6 +97,7 @@ export async function renameFile(
         ? newName
         : checkFileName(String(newName));
     const trimFile = file.split("input/")[1];
+    console.log(trimFile, checkedName, mode);
     const response = await axiosInstance.put("/files/rename", {
       oldFile: trimFile,
       newFilename: checkedName,

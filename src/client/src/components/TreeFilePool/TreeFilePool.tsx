@@ -15,6 +15,7 @@ import {
   fetchFileListing,
   moveFile,
   uploadFile,
+  renameChapterOrAppendix,
 } from "@/services/fileOperations";
 import { getConfigNode } from "@/services/configOperations";
 import DropDownMenu from "../DropDown";
@@ -200,14 +201,10 @@ function TreeComponent(): JSX.Element {
   async function handleRenameChapOrAppxPrompt(
     nodeToRename: ArboristNode
   ): Promise<void> {
-    if (
-      nodeToRename.restricted ||
-      ["chapter", "appendix"].includes(nodeToRename.nodetype)
-    )
-      return;
+    if (nodeToRename.restricted) return;
     const newName = window.prompt(
       `Renombrar [${nodeToRename.nodetype}] ${nodeToRename.name} a:`,
-      nodeToRename.name
+      nodeToRename.nodename
     );
 
     if (!newName || newName.trim() === "" || newName === nodeToRename.name) {
@@ -215,6 +212,8 @@ function TreeComponent(): JSX.Element {
     }
 
     await RenameChapOrAppx(nodeToRename, newName);
+    selectNode(null);
+    await fetchTree();
   }
 
   async function handleRename(
@@ -237,8 +236,21 @@ function TreeComponent(): JSX.Element {
 
   async function RenameChapOrAppx(
     nodeToRename: ArboristNode,
-    newName: string
-  ): Promise<void> {}
+    newTitle: string
+  ): Promise<void> {
+    if (nodeToRename.restricted) return;
+
+    try {
+      const file: string = nodeToRename.metadata.path;
+      await renameChapterOrAppendix(file, newTitle);
+      alert(`Capítulo/Apéndice ${nodeToRename.name} renombrado a ${newTitle}`);
+      selectNode(null);
+      await fetchTree();
+    } catch (err) {
+      alert(`Error al renombrar ${nodeToRename.name}`);
+      console.error(`Error al renombrar ${nodeToRename.name}:`, err);
+    }
+  }
 
   async function handleComment(nodeToComm: ArboristNode): Promise<void> {
     if (nodeToComm.restricted) return;
@@ -535,8 +547,11 @@ function TreeComponent(): JSX.Element {
                         ? styles.treeItemFontColorMoving
                         : isCommented
                         ? styles.treeItemFontColorCommented
+                        : isSelected
+                        ? styles.treeItemFontColorSelected
                         : styles.treeItemFontColorStandard
                     }
+                    
                     `}
                   >
                     {arboristNode.order
@@ -700,7 +715,10 @@ function TreeComponent(): JSX.Element {
                           label: "Rename",
                           icon: "✏️",
                           disabled: isSelected && !isRestricted && !movingNode,
-                          onClick: () => handleRenamePrompt(arboristNode),
+                          onClick: () =>
+                            isChapterOrAppendix
+                              ? handleRenameChapOrAppxPrompt(arboristNode)
+                              : handleRenamePrompt(arboristNode),
                         },
                         {
                           operation: "move",
