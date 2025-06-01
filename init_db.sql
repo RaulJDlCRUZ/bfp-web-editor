@@ -58,9 +58,10 @@ CREATE TABLE
     user_id VARCHAR(16) PRIMARY KEY,
     email VARCHAR(64) UNIQUE NOT NULL,
     name VARCHAR(64) NOT NULL,
+    password VARCHAR(64) NOT NULL,
     lastname1 VARCHAR(64) NOT NULL,
-    lastname2 VARCHAR(64),
-    technology VARCHAR(128),
+    lastname2 VARCHAR(64) NOT NULL,
+    technology VARCHAR(128) NOT NULL,
     phone INTEGER CHECK (
       phone IS NULL
       OR (
@@ -104,6 +105,7 @@ CREATE TABLE
     autorship VARCHAR(512),
     dedications VARCHAR(128),
     resumen VARCHAR(1024),
+    bibliography TEXT,
     -- Clave foránea con CASCADE (relación 1:1)
     CONSTRAINT basic_info_tfg_fk FOREIGN KEY (tfg) REFERENCES TFG (bfp_id) ON DELETE CASCADE ON UPDATE CASCADE
   );
