@@ -4,8 +4,6 @@ import {
   restrictedDirectories,
   allowNewDirectories,
   prettySetupFiles,
-  // hideCSL,
-  // hideDirectories,
   nodeOrder,
 } from "@/common/constants";
 

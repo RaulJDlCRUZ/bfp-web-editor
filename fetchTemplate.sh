@@ -8,6 +8,19 @@ GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
 RED="\033[0;31m"
 RESET="\033[0m"
+OVERRIDE=false
+
+# Parse arguments
+for arg in "$@"; do
+    case $arg in
+        --override|-o)
+            OVERRIDE=true
+            shift
+            ;;
+        *)
+            ;;
+    esac
+done
 
 # Check if the zip file exists, if not, download the template
 if [ ! -f "$ZIP_FILE" ]; then
@@ -20,8 +33,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # Check if the extraction directory already exists
-if [ -d "$EXTRACT_DIR" ]; then
-    echo -e "${RED}The directory '$EXTRACT_DIR' already exists. Please remove it before running this script.${RESET}"
+if [ -d "$EXTRACT_DIR" ] && [ "$OVERRIDE" = false ]; then
+    echo -e "${RED}The directory '$EXTRACT_DIR' already exists. Please remove it or use the --override option.${RESET}"
     exit 1
 fi
 

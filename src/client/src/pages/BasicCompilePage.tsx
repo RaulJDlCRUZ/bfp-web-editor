@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, JSX } from "react";
 import CompileButton from "../components/CompileButton/CompileButton";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
 
-const BasicCompilePage: React.FC = () => {
+function BasicCompilePage(): JSX.Element {
   const [documentData, setDocumentData] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col items-center justify-start pt-10">
       <div className="text-center">
-        <h1 className="text-6xl text-gray-700 font-bold">TFG Web Editor (Demo)</h1>
+        <h1 className="text-6xl text-gray-700 font-bold">
+          TFG Web Editor (Demo)
+        </h1>
         <p className="text-gray-500 text-2xl mt-4">
           A simple web compiler for TFG documents
         </p>
@@ -40,6 +42,6 @@ const BasicCompilePage: React.FC = () => {
       )}
     </div>
   );
-};
+}
 
 export default BasicCompilePage;

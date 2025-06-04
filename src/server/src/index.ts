@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import fileRoutes from "./routes/files.routes.js";
 import compileRoutes from "./routes/compile.routes.js";
 import configRoutes from "./routes/config.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import { removeOldDoc } from "./utils/removeOldDoc.js";
 
 dotenv.config({ override: true });
@@ -45,9 +46,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(clientPath, "index.html"));
 });
 
+app.use("/api/config", configRoutes);
 app.use("/api/doc", compileRoutes);
 app.use("/api/files", fileRoutes);
-app.use("/api/config", configRoutes);
+app.use("/api/users", userRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK" });

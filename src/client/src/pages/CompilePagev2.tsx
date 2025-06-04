@@ -1,12 +1,14 @@
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, JSX } from "react";
 import CompileButton from "@/components/CompileButton/CompileButton";
 import TextArea from "@/components/ContentManagement/TextArea";
 import { FileExplorerProvider } from "@/context/FileExplorerContext";
 
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
-const FileTree = React.lazy(() => import("@/components/TreeFilePool/TreeFilePool"));
+const FileTree = React.lazy(
+  () => import("@/components/TreeFilePool/TreeFilePool")
+);
 
-const NextCompilePage: React.FC = () => {
+function NextCompilePage(): JSX.Element {
   const [documentData, setDocumentData] = useState<string | null>(null);
 
   return (
@@ -66,6 +68,6 @@ const NextCompilePage: React.FC = () => {
       </div>
     </FileExplorerProvider>
   );
-};
+}
 
 export default NextCompilePage;
