@@ -27,6 +27,7 @@ if [ ! -f "$ZIP_FILE" ]; then
     curl -X GET "$TEMPLATE_URL" -o "$ZIP_FILE"
 fi
 
+# Error handling for curl command
 if [ $? -ne 0 ]; then
     echo -e "${RED}Error downloading the template file.${RESET}"
     exit 1
@@ -40,6 +41,17 @@ fi
 
 # Extract the zip file to the current working directory
 unzip -d . "$ZIP_FILE"
+
+# Error handling for unzip command
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Error extracting the template file.${RESET}"
+    exit 1
+fi
+
+if [ "$OVERRIDE" = true ]; then
+    echo -e "${YELLOW}The directory '$EXTRACT_DIR' already exists and will be overridden.${RESET}"
+    rm -rf "$EXTRACT_DIR"
+fi
 
 # Rename the extracted folder
 mv template/ "$EXTRACT_DIR"

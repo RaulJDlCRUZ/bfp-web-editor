@@ -5,12 +5,10 @@ import {
   readConfigFile,
   readResources,
   readSetupFiles,
-} from "../utils/fileReader.js";
+} from "../../utils/fileReader.js";
 import path from "path";
-
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-// import Pool from "../pool";
 
 dotenv.config({ override: true });
 
@@ -22,12 +20,13 @@ export async function constructTFG(): Promise<any> {
   const infilepath = process.env.INFILEPATH || "input";
   const root =
     process.env.NODE_ENV === "development"
-      ? path.resolve(path.dirname(__dirname), "..", "..", "..")
-      : // : path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..");
+      ? path.resolve(path.dirname(__dirname), "..", "..", "..", "..")
+      :
         path.resolve(
           path.dirname(__dirname),
           "..",
-          ".." // For npx tsx testing, at reallity it's 2 levels up
+          "..",
+          ".."
         );
 
   const tfggii_dir = path.join(root, infilepath);

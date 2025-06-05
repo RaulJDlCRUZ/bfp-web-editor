@@ -74,6 +74,6 @@
     "dev:all": "concurrently \"npm run backend:dev\" \"npm run client:dev\"",
     "build": "npm run backend:build && npm run client:build",
     "clean": "rm -rf dist",
-    "start": "npm run build && npm run backend:start"
+    "start": "chmod +x ./fetchTemplate.sh && npm run build && npm run backend:start"
   }
 }

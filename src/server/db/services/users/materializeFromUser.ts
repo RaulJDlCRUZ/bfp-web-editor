@@ -52,13 +52,3 @@ export async function materializeFromUser(userID: string): Promise<void> {
     client.release();
   }
 }
-
-(async () => {
-  try {
-    const userID = "12345"; // Replace with the actual user ID you want to materialize
-    await materializeFromUser(userID);
-    console.log("TFG materialization completed successfully.");
-  } catch (error) {
-    console.error("Error during TFG materialization:", error);
-  }
-})();

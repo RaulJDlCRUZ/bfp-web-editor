@@ -12,9 +12,14 @@ export async function getConfigFile(
   try {
     // Read the config file
     const fileContents = fs.readFileSync(configPath, "utf8");
+    const lines = fileContents
+      .split("\n")
+      .filter((line) => !line.startsWith("Cite:"));
+    // Then, we can parse the remaining lines as YAML
+    const filteredContent = lines.join("\n");
     try {
       // Parse the YAML content
-      const config = yaml.load(fileContents) as Record<string, any>;
+      const config = yaml.load(filteredContent) as Record<string, any>;
       res.status(200).json(config);
     } catch (yamlError) {
       console.error("YAML parsing error:", yamlError);

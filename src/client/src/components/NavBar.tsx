@@ -1,6 +1,7 @@
 /* Adapted from Anonymous: https://www.creative-tim.com/twcomponents/component/navbar-7 */
 import { JSX } from "react";
 import TWESVG from "../assets/twe/TWE_black.svg";
+import NavBarDropDown from "./DropDown/NavBarDropDown";
 
 function NavBar(): JSX.Element {
   return (
@@ -26,6 +27,11 @@ function NavBar(): JSX.Element {
             </li>
             <li className="md:px-4 md:py-2 hover:text-green-500">
               <a href="https://github.com/RaulJDlCRUZ/">Contact</a>
+            </li>
+            <li>
+              <div className="order-4 md:order-3">
+                <NavBarDropDown />
+              </div>
             </li>
           </ul>
         </div>

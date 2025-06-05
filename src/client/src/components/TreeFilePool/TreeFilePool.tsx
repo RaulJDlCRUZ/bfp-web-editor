@@ -18,7 +18,7 @@ import {
   renameChapterOrAppendix,
 } from "@/services/fileOperations";
 import { getConfigNode } from "@/services/configOperations";
-import DropDownMenu from "../DropDown";
+import DropDownMenu from "../DropDown/NodeDropDown";
 import Tooltip from "../Tooltips/Tooltipv2";
 import styles from "./TreeFilePool.module.css";
 

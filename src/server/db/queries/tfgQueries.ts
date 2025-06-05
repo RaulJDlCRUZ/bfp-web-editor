@@ -1,6 +1,6 @@
 export const insertTfgQuery = `
-  INSERT INTO tfg (bfp_id, title, subtitle, tutor, cotutor, department, language, csl, month, year, student)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+  INSERT INTO tfg (title, subtitle, tutor, cotutor, department, language, csl, month, year, student)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
   RETURNING bfp_id;
 `;
 

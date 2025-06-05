@@ -3,6 +3,8 @@ export class Appendix {
     public appx_id: number,
     public ap_title: string,
     public number: number,
+    public is_omitted: boolean = false,
+    public original_number: number,
     public content: string,
     public tfg: number // Foreign key to TFG
   ) {}
@@ -12,6 +14,8 @@ export class Appendix {
       row.appx_id,
       row.ap_title,
       row.number,
+      row.is_omitted,
+      row.original_number,
       row.content,
       row.tfg
     );

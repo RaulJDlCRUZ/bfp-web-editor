@@ -55,7 +55,7 @@ CREATE DOMAIN csl_namefile AS VARCHAR(64) CHECK (
 -- Tabla USERS
 CREATE TABLE
   USERS (
-    user_id VARCHAR(16) PRIMARY KEY,
+    user_id SERIAL PRIMARY KEY,
     email VARCHAR(64) UNIQUE NOT NULL,
     name VARCHAR(64) NOT NULL,
     password VARCHAR(64) NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE
       AND year <= 9999
     ),
     -- additional_i VARCHAR(16), -- ELIMINADO: Causa dependencia circular
-    student VARCHAR(16) NOT NULL,
+    student INTEGER NOT NULL,
     -- Restricciones
     CONSTRAINT tfg_title_unique UNIQUE (title),
     CONSTRAINT tfg_student_unique UNIQUE (student), -- 1:1 relación TFG-USERS
@@ -140,7 +140,9 @@ CREATE TABLE
   CHAPTERS (
     chapter_id VARCHAR(64) PRIMARY KEY,
     ch_title VARCHAR(64) NOT NULL,
-    number INTEGER NOT NULL CHECK (number != 0),
+    number INTEGER NOT NULL CHECK (number > 0),
+    is_omitted BOOLEAN NOT NULL DEFAULT FALSE,
+    original_number INTEGER,
     content TEXT NOT NULL,
     tfg INTEGER NOT NULL,
     -- Restricción de unicidad para el número de capítulo por TFG
@@ -149,12 +151,18 @@ CREATE TABLE
     CONSTRAINT chapters_tfg_fk FOREIGN KEY (tfg) REFERENCES TFG (bfp_id) ON DELETE CASCADE ON UPDATE CASCADE
   );
 
+CREATE UNIQUE INDEX chapters_number_tfg_unique_idx ON CHAPTERS (number, tfg)
+WHERE
+  is_omitted = FALSE;
+
 -- Tabla APPENDICES
 CREATE TABLE
   APPENDICES (
     appx_id VARCHAR(64) PRIMARY KEY,
     ap_title VARCHAR(64) NOT NULL,
-    number INTEGER NOT NULL CHECK (number != 0),
+    number INTEGER NOT NULL CHECK (number > 0),
+    is_omitted BOOLEAN NOT NULL DEFAULT FALSE,
+    original_number INTEGER,
     content TEXT NOT NULL,
     tfg INTEGER NOT NULL,
     -- Restricción de unicidad para el número de anexo por TFG
@@ -162,3 +170,7 @@ CREATE TABLE
     -- Clave foránea
     CONSTRAINT appendices_tfg_fk FOREIGN KEY (tfg) REFERENCES TFG (bfp_id) ON DELETE CASCADE ON UPDATE CASCADE
   );
+
+CREATE UNIQUE INDEX appendices_number_tfg_unique_idx ON APPENDICES (number, tfg)
+WHERE
+  is_omitted = FALSE;
