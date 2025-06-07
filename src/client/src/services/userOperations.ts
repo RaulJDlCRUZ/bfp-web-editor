@@ -3,7 +3,7 @@ import axiosInstance from "./axios/apiInstance";
 export async function CreateUserFromForm(data: any): Promise<void> {
   try {
     const response = await axiosInstance.post("/users", data);
-    if (!response.data || !response.data.success) {
+    if (!response.data || response.status !== 200) {
       throw new Error("Error al crear el usuario");
     }
     console.log("Usuario creado exitosamente:", response.data);

@@ -1,6 +1,5 @@
 export class TFG {
   constructor(
-    public bfp_id: number,
     public title: string,
     public tutor: string,
     public department: string,
@@ -8,7 +7,8 @@ export class TFG {
     public csl: string,
     public month: string,
     public year: number,
-    public student: string, // user_id == student
+    public student: number, // user_id == student
+    public bfp_id?: number,
     public subtitle?: string | null,
     public cotutor?: string | null
   ) {}
@@ -31,7 +31,7 @@ export class TFG {
 
   toArray(): (string | number | null)[] {
     return [
-      this.bfp_id,
+      this.bfp_id ? this.bfp_id : null, // bfp_id can be null
       this.title,
       this.subtitle ? this.subtitle : null,
       this.tutor,

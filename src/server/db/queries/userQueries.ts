@@ -1,5 +1,5 @@
 export const insertUserQuery = `
-  INSERT INTO users (email, name, password, lastname1, lastname2, technology, phone)
+  INSERT INTO users (email, password, name, lastname1, lastname2, technology, phone)
   VALUES ($1, $2, $3, $4, $5, $6, $7)
   RETURNING user_id;
 `;

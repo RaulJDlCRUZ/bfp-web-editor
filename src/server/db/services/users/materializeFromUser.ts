@@ -2,6 +2,10 @@ import Pool from "../../config/pool.js";
 import { getUserByIdQuery } from "../../queries/userQueries.js";
 import { getTfgByUserIdQuery } from "../../queries/tfgQueries.js";
 
+async function generateChapterFiles() {
+  
+}
+
 export async function materializeFromUser(userID: string): Promise<void> {
   // This function will materialize the TFG from the user ID
   // It will get the user data, TFG data, and other related information

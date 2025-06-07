@@ -1,12 +1,12 @@
 export class User {
   constructor(
-    public user_id: number,
     public email: string,
-    public name: string,
     public password: string,
+    public name: string,
     public lastname1: string,
     public lastname2: string,
     public technology: string,
+    public user_id?: number,
     public phone?: number | null
   ) {}
 
@@ -14,8 +14,8 @@ export class User {
     return new User(
       row.user_id,
       row.email,
-      row.name,
       row.password,
+      row.name,
       row.lastname1,
       row.lastname2,
       row.technology,
@@ -25,7 +25,7 @@ export class User {
 
   toArray(): (string | number | null)[] {
     return [
-      this.user_id,
+      this.user_id ? this.user_id : null,
       this.email,
       this.name,
       this.password,

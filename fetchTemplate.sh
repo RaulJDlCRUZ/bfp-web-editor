@@ -39,8 +39,8 @@ if [ -d "$EXTRACT_DIR" ] && [ "$OVERRIDE" = false ]; then
     exit 1
 fi
 
-# Extract the zip file to the current working directory
-unzip -d . "$ZIP_FILE"
+# Extract the zip file to the current working directory (no output)
+unzip -d . "$ZIP_FILE" > /dev/null 2>&1
 
 # Error handling for unzip command
 if [ $? -ne 0 ]; then

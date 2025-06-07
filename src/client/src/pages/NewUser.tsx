@@ -86,12 +86,13 @@ function NewUserForm(): JSX.Element {
       };
 
       await CreateUserFromForm({ userData, tfgData });
+      alert("New user created successfully!");
+      // Redirect to the environment
+      window.location.href = "/";
     } catch (error) {
       console.error("Error saving changes:", error);
       alert("An error occurred while saving changes. Please try again.");
       return;
-    } finally {
-      alert("Changes saved successfully!");
     }
   }
 

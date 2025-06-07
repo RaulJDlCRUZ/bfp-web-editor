@@ -15,11 +15,11 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <App>
         <Routes>
-          <Route path="/new-user" element={<NewUserForm />} />
           <Route path="/" element={<CompilePagev4 />} />
+          <Route path="/new-user" element={<NewUserForm />} />
+          <Route path="/legacy" element={<BasicCompilePage />} />
           <Route path="/v2" element={<CompilePagev2 />} />
           <Route path="/v3" element={<CompilePagev3 />} />
-          <Route path="/legacy" element={<BasicCompilePage />} />
         </Routes>
       </App>
     </BrowserRouter>
