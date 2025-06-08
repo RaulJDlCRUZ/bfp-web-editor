@@ -1,16 +1,16 @@
-import pool from "../../config/pool";
+import pool from "@db/config/pool";
+import { insertUserQuery } from "@db/queries/userQueries";
+import { insertTfgQuery } from "@db/queries/tfgQueries";
+import { insertBasicInfoQuery } from "@db/queries/basicInfoQueries";
+import { insertChapterQuery } from "@db/queries/chapterQueries";
+import { insertAppendixQuery } from "@db/queries/appendixQueries";
+import { insertResourceQuery } from "@db/queries/imageQueries";
+import { insertAcronymQuery } from "@db/queries/acronymQueries";
 import { constructTFG } from "./defaultTfgConstruct";
 import { parseAcronymFile } from "../parse/acronymParser";
-import { insertUserQuery } from "../../queries/userQueries";
-import { insertTfgQuery } from "../../queries/tfgQueries";
-import { insertBasicInfoQuery } from "../../queries/basicInfoQueries";
-import { insertChapterQuery } from "../../queries/chapterQueries";
-import { insertAppendixQuery } from "../../queries/appendixQueries";
-import { insertResourceQuery } from "../../queries/imageQueries";
-import { insertAcronymQuery } from "../../queries/acronymQueries";
 
-import { User } from "../../models/User";
-import { TFG } from "../../models/Tfg";
+import { User } from "@db/models/User";
+import { TFG } from "@db/models/Tfg";
 import { PoolClient } from "pg";
 
 async function insertChapters(
@@ -149,6 +149,8 @@ export async function initNewUser(userData: User, tfgData: TFG): Promise<void> {
     const cfg = data.config;
     const bib = data.bibliography;
 
+    console.log(setup);
+
     // Ensure TFG data is correct before inserting
     tfgData.csl = cfg.Csl.split("/").pop().split(".")[0]; // Filename without route and extension
     tfgData.month = tfgData.month ? tfgData.month : "JUNIO"; // Assuming the creation of a TFG is in ordinary (June)
@@ -158,11 +160,11 @@ export async function initNewUser(userData: User, tfgData: TFG): Promise<void> {
 
     // Insert basic info data
     const basicInfoArray = [
-      "cfg_" + userData.user_id, // cfg_id == user_id FOR THE MOMENT
       bfp_id,
+      "cfg_" + userData.user_id, // cfg_id == user_id FOR THE MOMENT
       setup.abstract,
       setup.acknowledgements,
-      setup.autorship,
+      setup.authorship,
       setup.dedication,
       setup.resumen,
       bib,

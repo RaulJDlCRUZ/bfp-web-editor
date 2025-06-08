@@ -15,17 +15,17 @@ export class TFG {
 
   static fromDbRow(row: any): TFG {
     return new TFG(
-      row.bfp_id,
       row.title,
-      row.subtitle || null, // subtitle can be null
       row.tutor,
-      row.cotutor || null, // cotutor can be null
       row.department,
       row.language,
       row.csl,
       row.month,
       row.year,
-      row.student
+      row.student,
+      row.bfp_id,
+      row.subtitle || null, // subtitle can be null
+      row.cotutor || null // cotutor can be null
     );
   }
 

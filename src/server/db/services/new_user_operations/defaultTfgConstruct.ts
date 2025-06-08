@@ -5,7 +5,7 @@ import {
   readConfigFile,
   readResources,
   readSetupFiles,
-} from "../../utils/fileReader.js";
+} from "@db/utils/fileReader.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
@@ -21,13 +21,7 @@ export async function constructTFG(): Promise<any> {
   const root =
     process.env.NODE_ENV === "development"
       ? path.resolve(path.dirname(__dirname), "..", "..", "..", "..")
-      :
-        path.resolve(
-          path.dirname(__dirname),
-          "..",
-          "..",
-          ".."
-        );
+      : path.resolve(path.dirname(__dirname), "..", "..", "..");
 
   const tfggii_dir = path.join(root, infilepath);
   const chapters_path = path.join(tfggii_dir, "chapters");

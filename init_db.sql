@@ -101,9 +101,9 @@ CREATE TABLE
     tfg INTEGER PRIMARY KEY, -- PK heredada del padre (dependencia por identificación)
     cfg_id VARCHAR(16) NOT NULL, -- Discriminante/atributo adicional
     abstract VARCHAR(1024),
-    ack VARCHAR(128),
-    autorship VARCHAR(512),
-    dedications VARCHAR(128),
+    acknowledgements VARCHAR(128),
+    authorship VARCHAR(512),
+    dedication VARCHAR(128),
     resumen VARCHAR(1024),
     bibliography TEXT,
     -- Clave foránea con CASCADE (relación 1:1)

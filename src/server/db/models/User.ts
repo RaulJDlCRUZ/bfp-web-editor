@@ -12,13 +12,13 @@ export class User {
 
   static fromDbRow(row: any): User {
     return new User(
-      row.user_id,
       row.email,
       row.password,
       row.name,
       row.lastname1,
       row.lastname2,
       row.technology,
+      row.user_id,
       row.phone || null // phone can be null
     );
   }

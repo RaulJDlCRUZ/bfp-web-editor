@@ -7,6 +7,7 @@ import {
   createNewTFG,
   initNewUser,
 } from "@db/services/new_user_operations/initNewUser.js";
+import { updateFile } from "./files.controller.js";
 import { root } from "../index.js";
 
 async function fetchTemplate(): Promise<void> {
@@ -49,7 +50,41 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     // Fetch the template, then create the new user with basic resources
     await fetchTemplate();
     const tfg: TFG = await createNewTFG(user.user_id, tfgData);
-    initNewUser(user, tfg);
+    await initNewUser(user, tfg);
+    // If everything is successful, update the config.yaml file
+
+    /*
+    Cite: @Gutwin2010GoneBut, @Rekimoto1997PickDrop
+    Cotutor: Nombre del Co-tutor Académico
+    Csl: input/resources/csl/acm-sig-proceedings.csl
+    Department: Departamento tutor académico
+    Language: spanish
+    Month: Mes
+    Name: Nombre
+    Technology: Tecnología Específica
+    Title: Título (esp)
+    Subtitle: Título (eng)
+    Tutor: Nombre del Tutor Académico
+    Year: Año
+    */
+
+    const configData = {
+      Cotutor: tfg.cotutor,
+      Csl: `input/resources/csl/${tfg.csl}.csl`,
+      Department: tfg.department,
+      Language: String(tfg.language).toLowerCase(),
+      Month:
+        tfg.month.charAt(0).toUpperCase() + tfg.month.slice(1).toLowerCase(), // Capitalize first letter
+      Name: user.name + " " + user.lastname1 + " " + user.lastname2,
+      Technology: user.technology,
+      Title: tfg.title,
+      Subtitle: tfg.subtitle,
+      Tutor: tfg.tutor,
+      Year: String(tfg.year),
+    };
+
+    // updateFile(,)
+
     res.status(200).json({ message: "New user created" });
   } catch (error) {
     console.error("Error creating user:", error);

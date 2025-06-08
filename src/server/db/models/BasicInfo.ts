@@ -1,7 +1,7 @@
 export class BasicInfo {
   constructor(
-    public cfg_id: string, // cfg_id == user_id FOR THE MOMENT
     public bfp_id: number,
+    public cfg_id: string, // cfg_id ~= user_id FOR THE MOMENT
     public abstract?: string,
     public acknowledgements?: string,
     public authorship?: string,
@@ -9,11 +9,11 @@ export class BasicInfo {
     public resumen?: string,
     public bibliography?: string
   ) {}
-  
+
   static fromDbRow(row: any): BasicInfo {
     return new BasicInfo(
-      row.cfg_id,
       row.bfp_id,
+      row.cfg_id,
       row.abstract || null, // abstract can be null
       row.acknowledgements || null, // acknowledgements can be null
       row.authorship || null, // authorship can be null
