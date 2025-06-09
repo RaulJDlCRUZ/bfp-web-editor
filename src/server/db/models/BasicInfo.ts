@@ -25,8 +25,8 @@ export class BasicInfo {
 
   ToArray(): (string | number | null)[] {
     return [
-      this.cfg_id,
       this.bfp_id,
+      this.cfg_id,
       this.abstract ? this.abstract : null,
       this.acknowledgements ? this.acknowledgements : null,
       this.authorship ? this.authorship : null,

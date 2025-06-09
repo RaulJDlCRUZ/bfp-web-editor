@@ -5,10 +5,10 @@ import { parseMarkdownFile } from "../services/parse/markdownParser";
 
 export async function readChapters(
   ch_path: string
-): Promise<Record<string, any>> {
+): Promise<Array<Record<string, any>>> {
   // As It's a setup, I consider and obtain all chapters
   const files = await fs.readdir(ch_path);
-  const chapters: Record<number, any> = {};
+  const chapters: Array<Record<number, any>> = [];
   for (const file of files) {
     const number = parseInt(
       path.basename(file, path.extname(file)).slice(0, 2)
@@ -17,7 +17,12 @@ export async function readChapters(
       const content = await fs.readFile(path.join(ch_path, file), "utf-8");
       const data = parseMarkdownFile(content);
       // Store the chapter data in the object with its number as key
-      chapters[number] = data;
+      // chapters[number] = data;
+      const chapterRecord: Record<string, any> = {
+        number: number,
+        data: data,
+      };
+      chapters.push(chapterRecord);
     }
   }
   return chapters;
@@ -25,10 +30,10 @@ export async function readChapters(
 
 export async function readAppendices(
   ap_path: string
-): Promise<Record<string, any>> {
+): Promise<Array<Record<string, any>>> {
   // Same as chapters, but for appendices
   const files = await fs.readdir(ap_path);
-  const appendices: Record<number, any> = {};
+  const appendices: Array<Record<number, any>> = [];
   for (const file of files) {
     const number = parseInt(
       path.basename(file, path.extname(file)).slice(0, 2)
@@ -36,7 +41,12 @@ export async function readAppendices(
     if (file.endsWith(".md")) {
       const content = await fs.readFile(path.join(ap_path, file), "utf-8");
       const data = parseMarkdownFile(content);
-      appendices[number] = data;
+      // appendices[number] = data;
+      const appendixRecord: Record<string, any> = {
+        number: number,
+        data: data,
+      };
+      appendices.push(appendixRecord);
     }
   }
   return appendices;
@@ -74,6 +84,7 @@ export async function readConfigFile(
     // Then, we can parse the remaining lines as YAML
     const filteredContent = lines.join("\n");
     config = yaml.load(filteredContent) as Record<string, any>;
+    await fs.writeFile(path.join(dir, "config.yaml"), filteredContent, "utf-8");
   } catch (error) {
     console.error("Error reading or parsing config file:", error);
     // Handle the error as needed, e.g., return an empty object or throw an error
@@ -85,14 +96,19 @@ export async function readConfigFile(
 
 export async function readResources(
   res_path: string
-): Promise<Record<string, any>> {
-  let resources: Record<string, any> = {};
+): Promise<Array<Record<string, any>>> {
+  let resources: Array<Record<string, any>> = [];
   const files = await fs.readdir(res_path);
   for (const file of files) {
     const filePath = path.join(res_path, file);
     try {
       const content = await fs.readFile(filePath);
-      resources[file] = content; // Store the raw binary content of the file
+      // resources[file] = content; // Store the raw binary content of the file
+      const imageRecord: Record<string, any> = {
+        file: file,
+        content: content,
+      };
+      resources.push(imageRecord);
     } catch (error) {
       console.error(`Error reading file ${file}:`, error);
     }

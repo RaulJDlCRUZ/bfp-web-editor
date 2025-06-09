@@ -57,8 +57,8 @@ CREATE TABLE
   USERS (
     user_id SERIAL PRIMARY KEY,
     email VARCHAR(64) UNIQUE NOT NULL,
-    name VARCHAR(64) NOT NULL,
     password VARCHAR(64) NOT NULL,
+    name VARCHAR(64) NOT NULL,
     lastname1 VARCHAR(64) NOT NULL,
     lastname2 VARCHAR(64) NOT NULL,
     technology VARCHAR(128) NOT NULL,

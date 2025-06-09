@@ -1,4 +1,4 @@
-export function parseAcronymFile(content: string) {
+export function parseAcronymFile(content: string): Record<string, string> {
   const splitChar: string = ": ";
   const lines = content.split("\n").filter((line) => line.trim() !== "");
   const acronyms: Record<string, string> = {};

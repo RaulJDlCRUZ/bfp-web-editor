@@ -27,8 +27,8 @@ export class User {
     return [
       this.user_id ? this.user_id : null,
       this.email,
-      this.name,
       this.password,
+      this.name,
       this.lastname1,
       this.lastname2,
       this.technology,

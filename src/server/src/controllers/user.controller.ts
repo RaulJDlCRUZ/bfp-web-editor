@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { promisify } from "util";
 import { exec } from "child_process";
 import { User } from "@db/models/User.js";
 import { TFG } from "@db/models/Tfg.js";
@@ -7,21 +8,30 @@ import {
   createNewTFG,
   initNewUser,
 } from "@db/services/new_user_operations/initNewUser.js";
-import { updateFile } from "./files.controller.js";
+import { updateConfigFile } from "./config.controller.js";
 import { root } from "../index.js";
 
+// Promisify exec to use async/await
+// This allows us to use exec in an async function without callbacks
+const execAsync = promisify(exec);
+
+/**
+ * Fetches the template by executing a shell script.
+ * The script is expected to be located at the specified path.
+ * It overrides the existing template if the --override flag is provided.
+ */
 async function fetchTemplate(): Promise<void> {
   const script = `${root}/fetchTemplate.sh`;
-  exec(`sh ${script} --override`, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error executing script:\n${error.message}`);
-      throw error;
-    }
+  try {
+    const { stdout, stderr } = await execAsync(`sh ${script} --override`);
     if (stderr) {
       console.error(`Script stderr:\n${stderr}`);
     }
     console.log(`Script stdout:\n${stdout}`);
-  });
+  } catch (error) {
+    console.error(`Error executing script:\n${error}`);
+    throw error;
+  }
 }
 
 export async function getAllUsers(res: Response) {
@@ -53,21 +63,6 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     await initNewUser(user, tfg);
     // If everything is successful, update the config.yaml file
 
-    /*
-    Cite: @Gutwin2010GoneBut, @Rekimoto1997PickDrop
-    Cotutor: Nombre del Co-tutor Académico
-    Csl: input/resources/csl/acm-sig-proceedings.csl
-    Department: Departamento tutor académico
-    Language: spanish
-    Month: Mes
-    Name: Nombre
-    Technology: Tecnología Específica
-    Title: Título (esp)
-    Subtitle: Título (eng)
-    Tutor: Nombre del Tutor Académico
-    Year: Año
-    */
-
     const configData = {
       Cotutor: tfg.cotutor,
       Csl: `input/resources/csl/${tfg.csl}.csl`,
@@ -83,7 +78,20 @@ export async function createUser(req: Request, res: Response): Promise<void> {
       Year: String(tfg.year),
     };
 
-    // updateFile(,)
+    const tempRes = {
+      status: (code: number) => ({
+        json: (data: any) => {
+          console.log(`Response before changing config: ${code}`, data);
+        },
+      }),
+    } as unknown as Response;
+
+    updateConfigFile(
+      {
+        body: { config: configData },
+      } as Request,
+      tempRes
+    );
 
     res.status(200).json({ message: "New user created" });
   } catch (error) {

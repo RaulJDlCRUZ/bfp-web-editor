@@ -80,7 +80,7 @@ export async function updateConfigFile(
         .json({ error: "Invalid request body or missing 'config' property" });
     }
     const newConfig = req.body.config as Record<string, any>;
-    // console.log("New Config:", newConfig);
+    // console.log("New Config:\n", newConfig);
     // Read the existing config file
     const fileContents = fs.readFileSync(configPath, "utf8");
     const currentConfig = yaml.load(fileContents) as Record<string, any>;

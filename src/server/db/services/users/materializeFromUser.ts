@@ -69,7 +69,7 @@ async function generateBasicFiiles(
     throw new Error("Basic info not found for the TFG");
   }
   const basicInfoData = basicInfoResult.rows[0];
-  console.log("Basic info data:\n==========\n", basicInfoData);
+  // console.log("Basic info data:\n==========\n", basicInfoData);
   const basicInfo: BasicInfo = BasicInfo.fromDbRow(basicInfoData);
   console.log(`
     ./acknowledgements.md: ${basicInfo.acknowledgements}\n
