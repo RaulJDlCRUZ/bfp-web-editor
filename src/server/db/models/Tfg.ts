@@ -1,3 +1,5 @@
+import pool from "@db/config/pool.js";
+
 export class TFG {
   constructor(
     public title: string,
@@ -11,7 +13,33 @@ export class TFG {
     public bfp_id?: number,
     public subtitle?: string | null,
     public cotutor?: string | null
-  ) {}
+  ) {
+    if (!title) {
+      throw new Error("Title is required");
+    }
+    if (!tutor) {
+      throw new Error("Tutor is required");
+    }
+    if (!department) {
+      throw new Error("Department is required");
+    }
+    if (!language) {
+      throw new Error("Language is required");
+    }
+    // TODO: Handle CSL later
+    // if (!csl) {
+    //   throw new Error("CSL is required");
+    // }
+    if (!month) {
+      throw new Error("Month is required");
+    }
+    if (year === undefined || year === null) {
+      throw new Error("Year is required");
+    }
+    if (student === undefined || student === null) {
+      throw new Error("Student (user_id) is required");
+    }
+  }
 
   static fromDbRow(row: any): TFG {
     return new TFG(
@@ -43,5 +71,14 @@ export class TFG {
       this.year,
       this.student,
     ];
+  }
+
+  insertNewTFG(): TFG {
+    if (!this.bfp_id) {
+      throw new Error("bfp_id is not set. Cannot insert TFG.");
+    }
+    // CALL DATABASE HERE (INSERT INSTR.)
+    const tfgArray = this.toArray();
+    return this; // Return the TFG instance for further operations
   }
 }

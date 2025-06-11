@@ -15,8 +15,17 @@ dotenv.config({ override: true });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+interface constructTFGData {
+  chapters: Array<Record<number, { title: string; content: string }>>;
+  appendices: Array<Record<number, { title: string; content: string }>>;
+  setupFiles: Record<string, any>;
+  resources: Array<Record<string, string>>;
+  config: Record<string, any>;
+  bibliography: string;
+}
+
 /* This function creates a TFG from scratch (taking the basic template resources) */
-export async function constructTFG(): Promise<any> {
+export async function constructTFG(): Promise<constructTFGData> {
   const infilepath = process.env.INFILEPATH || "input";
   const root =
     process.env.NODE_ENV === "development"
@@ -30,8 +39,10 @@ export async function constructTFG(): Promise<any> {
   const bib_path = path.join(tfggii_dir, "resources", "bibliography");
   const config_path = path.join(tfggii_dir, "..");
 
-  const chapters = await readChapters(chapters_path);
-  const appendices = await readAppendices(appendices_path);
+  const chapters: Array<Record<number, { title: string; content: string }>> =
+    await readChapters(chapters_path);
+  const appendices: Array<Record<number, { title: string; content: string }>> =
+    await readAppendices(appendices_path);
   const setupFiles = await readSetupFiles(tfggii_dir);
   const resources = await readResources(resources_path);
   const config = await readConfigFile(config_path);

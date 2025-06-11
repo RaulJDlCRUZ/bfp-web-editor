@@ -3,9 +3,11 @@ import path from "path";
 import yaml from "js-yaml";
 import { parseMarkdownFile } from "../services/parse/markdownParser";
 
+// REFACTORIZAR PARA MOVER ESTO A CONTROLADORES Y LUEGO DECIRLE AL MODELO LO QUE DEBE INSERTAR
+
 export async function readChapters(
   ch_path: string
-): Promise<Array<Record<string, any>>> {
+): Promise<Array<Record<number, any>>> {
   // As It's a setup, I consider and obtain all chapters
   const files = await fs.readdir(ch_path);
   const chapters: Array<Record<number, any>> = [];
@@ -30,7 +32,7 @@ export async function readChapters(
 
 export async function readAppendices(
   ap_path: string
-): Promise<Array<Record<string, any>>> {
+): Promise<Array<Record<number, any>>> {
   // Same as chapters, but for appendices
   const files = await fs.readdir(ap_path);
   const appendices: Array<Record<number, any>> = [];

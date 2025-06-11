@@ -47,8 +47,6 @@ export async function initNewUser(userData: User, tfgData: TFG): Promise<void> {
     const cfg = data.config;
     const bib = data.bibliography;
 
-    console.log(setup);
-
     // Ensure TFG data is correct before inserting
     tfgData.csl = cfg.Csl.split("/").pop().split(".")[0]; // Filename without route and extension
     tfgData.month = tfgData.month ? tfgData.month : "JUNIO"; // Assuming the creation of a TFG is in ordinary (June)
@@ -141,10 +139,14 @@ export async function createNewTFG(
     );
     if (!tfg) {
       throw new Error("Failed to create TFG object.");
+      // Remove the user to ensure 1:1 relationship
+
     }
     return tfg;
   } catch (error) {
     console.error("Error initializing new TFG:", error);
+    // Remove the user to ensure 1:1 relationship
+    
     throw error;
   }
 }
