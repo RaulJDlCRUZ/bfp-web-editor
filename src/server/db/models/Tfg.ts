@@ -1,4 +1,4 @@
-import pool from "@db/config/pool.js";
+// import pool from "@db/config/pool.js";
 
 export class TFG {
   constructor(
@@ -78,7 +78,7 @@ export class TFG {
       throw new Error("bfp_id is not set. Cannot insert TFG.");
     }
     // CALL DATABASE HERE (INSERT INSTR.)
-    const tfgArray = this.toArray();
+    // const tfgArray = this.toArray();
     return this; // Return the TFG instance for further operations
   }
 }

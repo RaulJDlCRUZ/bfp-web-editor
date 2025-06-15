@@ -99,7 +99,7 @@ export async function createNewUser(userData: any): Promise<User> {
       userData.lastNames[0], // lastname1 (first element of lastNames array)
       userData.lastNames[1], // lastname2 (second element of lastNames array or empty string)
       userData.technology,
-      undefined, // user_id should be provided by the RDBMS
+      "", // user_id should be provided by the RDBMS
       userData.phone || null // phone (default to null if not provided)
     );
 

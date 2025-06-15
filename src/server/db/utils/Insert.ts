@@ -47,7 +47,7 @@ export class InsertFromArrayRecordNumberUnique extends Insert {
   ): Promise<void> {
     try {
       for (const record of dataArray) {
-        const number = Object.keys(record)[0]; // Get the unique number key
+        const number: number = Number(Object.keys(record)[0]); // Get the unique number key
         const data = record[number]; // Get the associated data
         await this.insertData(tableName, { ...data, number });
       }
