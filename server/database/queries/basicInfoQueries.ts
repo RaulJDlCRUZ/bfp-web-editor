@@ -1,9 +1,13 @@
-import pool from "../config/pool";
+import pool from "../config/db.js";
 
 const insertBasicInfoQuery = `
   INSERT INTO basic_info (tfg, cfg_id, abstract, acknowledgements, authorship, dedication, resumen, bibliography)
   VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-  RETURNING tfg, cfg_id;
+  RETURNING tfg;
+`;
+
+const getTfgByCfgIdQuery = `
+  SELECT tfg FROM basic_info WHERE cfg_id = $1;
 `;
 
 const getBasicInfoByTfgQuery = `
@@ -52,11 +56,30 @@ const updateBibliographyQuery = `
   RETURNING tfg;
 `;
 
-export async function insertBasicInfo(basicInfoArray: (number | string)[]) {
+const updateAllBasicInfoQuery = `
+  UPDATE basic_info
+  SET cfg_id = $2, abstract = $3, acknowledgements = $4,
+      authorship = $5, dedication = $6, resumen = $7, bibliography = $8
+  WHERE tfg = $1
+  RETURNING tfg;
+`;
+
+const removeBasicInfoQuery = `
+  DELETE FROM basic_info WHERE tfg = $1
+  RETURNING tfg;
+`;
+
+export async function insertBasicInfo(
+  basicInfoArray: (number | string)[]
+): Promise<number> {
   const client = await pool.connect();
   try {
     const result = await client.query(insertBasicInfoQuery, basicInfoArray);
-    return result.rows[0].tfg; // Return tfg as strong key
+    if (result.rows.length === 0) {
+      throw new Error("Failed to insert basic info, no rows returned.");
+    }
+    const tfg: number = result.rows[0].tfg;
+    return tfg; // Return tfg as strong key
   } catch (error) {
     console.error("Error inserting basic info:", error);
     throw error;
@@ -65,7 +88,26 @@ export async function insertBasicInfo(basicInfoArray: (number | string)[]) {
   }
 }
 
-export async function getBasicInfoByTfg(tfg: number) {
+export async function getTfgByCfgId(cfg_id: string): Promise<number> {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(getTfgByCfgIdQuery, [cfg_id]);
+    if (result.rows.length === 0) {
+      throw new Error(`No TFG found for CFG ID: ${cfg_id}`);
+    }
+    const tfg: number = result.rows[0].tfg;
+    return tfg; // Return tfg as strong key
+  } catch (error) {
+    console.error("Error fetching TFG by CFG ID:", error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function getBasicInfoByTfg(
+  tfg: number
+): Promise<(string | number | null) | null> {
   const client = await pool.connect();
   try {
     const result = await client.query(getBasicInfoByTfgQuery, [tfg]);
@@ -81,7 +123,10 @@ export async function getBasicInfoByTfg(tfg: number) {
   }
 }
 
-export async function updateAbstract(tfg: number, abstract: string) {
+export async function updateAbstract(
+  tfg: number,
+  abstract: string
+): Promise<number> {
   const client = await pool.connect();
   try {
     const result = await client.query(updateAbstractQuery, [tfg, abstract]);
@@ -97,7 +142,7 @@ export async function updateAbstract(tfg: number, abstract: string) {
 export async function updateAcknowledgements(
   tfg: number,
   acknowledgements: string
-) {
+): Promise<number> {
   const client = await pool.connect();
   try {
     const result = await client.query(updateAcknowledgementsQuery, [
@@ -113,7 +158,10 @@ export async function updateAcknowledgements(
   }
 }
 
-export async function updateAuthorship(tfg: number, authorship: string) {
+export async function updateAuthorship(
+  tfg: number,
+  authorship: string
+): Promise<number> {
   const client = await pool.connect();
   try {
     const result = await client.query(updateAuthorshipQuery, [tfg, authorship]);
@@ -126,7 +174,10 @@ export async function updateAuthorship(tfg: number, authorship: string) {
   }
 }
 
-export async function updateDedication(tfg: number, dedication: string) {
+export async function updateDedication(
+  tfg: number,
+  dedication: string
+): Promise<number> {
   const client = await pool.connect();
   try {
     const result = await client.query(updateDedicationQuery, [tfg, dedication]);
@@ -139,7 +190,10 @@ export async function updateDedication(tfg: number, dedication: string) {
   }
 }
 
-export async function updateResumen(tfg: number, resumen: string) {
+export async function updateResumen(
+  tfg: number,
+  resumen: string
+): Promise<number> {
   const client = await pool.connect();
   try {
     const result = await client.query(updateResumenQuery, [tfg, resumen]);
@@ -152,7 +206,10 @@ export async function updateResumen(tfg: number, resumen: string) {
   }
 }
 
-export async function updateBibliography(tfg: number, bibliography: string) {
+export async function updateBibliography(
+  tfg: number,
+  bibliography: string
+): Promise<number> {
   const client = await pool.connect();
   try {
     const result = await client.query(updateBibliographyQuery, [
@@ -162,6 +219,50 @@ export async function updateBibliography(tfg: number, bibliography: string) {
     return result.rows[0].tfg; // Return tfg as strong key
   } catch (error) {
     console.error("Error updating bibliography:", error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateAllBasicInfo(
+  tfg: number,
+  cfg_id: string,
+  abstract: string | null,
+  acknowledgements: string | null,
+  authorship: string | null,
+  dedication: string | null,
+  resumen: string | null,
+  bibliography: string | null
+): Promise<number> {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(updateAllBasicInfoQuery, [
+      tfg,
+      cfg_id,
+      abstract,
+      acknowledgements,
+      authorship,
+      dedication,
+      resumen,
+      bibliography,
+    ]);
+    return result.rows[0].tfg; // Return tfg as strong key
+  } catch (error) {
+    console.error("Error updating all basic info:", error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function removeBasicInfo(tfg: number): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(removeBasicInfoQuery, [tfg]);
+    return true;
+  } catch (error) {
+    console.error("Error removing basic info:", error);
     throw error;
   } finally {
     client.release();

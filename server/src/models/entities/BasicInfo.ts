@@ -31,7 +31,7 @@ export class BasicInfo {
 
   static fromDbRow(row: any): BasicInfo {
     return new BasicInfo(
-      row.bfp_id,
+      row.tfg, // Assuming 'tfg' is the BFP ID in the DB
       row.cfg_id,
       row.abstract || null, // abstract can be null
       row.acknowledgements || null, // acknowledgements can be null

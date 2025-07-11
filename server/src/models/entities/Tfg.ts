@@ -1,4 +1,4 @@
-export class TFG {
+export class Tfg {
   constructor(
     public title: string,
     public tutor: string,
@@ -45,8 +45,8 @@ export class TFG {
     );
   }
 
-  static fromDbRow(row: any): TFG {
-    return new TFG(
+  static fromDbRow(row: any): Tfg {
+    return new Tfg(
       row.title,
       row.tutor,
       row.department,

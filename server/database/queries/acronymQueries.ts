@@ -1,31 +1,40 @@
-import pool from "../config/pool.js";
+import pool from "../config/db.js";
 
 const insertAcronymQuery = `
   INSERT INTO acronyms (acronym, tfg, meaning)
   VALUES ($1, $2, $3)
-  RETURNING acronym_id`;
+  RETURNING acronym, tfg`;
 
 const getAcronymsByTfgQuery = `
   SELECT * FROM acronyms WHERE tfg = $1 ORDER BY acronym ASC;
 `;
 
-const getAcronymByIdQuery = `
-  SELECT * FROM acronyms WHERE acronym_id = $1;
-`;
-
+// As PK = (acronym, tfg), it's like find by id
 const getAcronymByAcronymAndTfgQuery = `
   SELECT * FROM acronyms WHERE acronym = $1 AND tfg = $2;
 `;
 
-const deleteAcronymQuery = `
-  DELETE FROM acronyms WHERE acronym_id = $1;
+const updateAcronymQuery = `
+  UPDATE acronyms
+  SET meaning = $1
+  WHERE acronym = $2 AND tfg = $3
+  RETURNING acronym, tfg, meaning;
 `;
 
-export async function insertAcronym(acronymArray: (string | number)[]) {
+const deleteAcronymQuery = `
+  DELETE FROM acronyms WHERE acronym = $1 AND tfg = $2;
+`;
+
+export async function insertAcronym(
+  acronymArray: (string | number)[]
+): Promise<(string | number | null)[]> {
   const client = await pool.connect();
   try {
     const result = await client.query(insertAcronymQuery, acronymArray);
-    return result.rows[0].acronym_id; // Return the acronym_id of the inserted acronym
+    if (result.rows.length === 0) {
+      throw new Error("Failed to insert acronym, no rows returned.");
+    }
+    return result.rows[0]; // Return the complex PK from inserted acronym
   } catch (error) {
     console.error("Error inserting acronym:", error);
     throw error;
@@ -34,7 +43,9 @@ export async function insertAcronym(acronymArray: (string | number)[]) {
   }
 }
 
-export async function getAcronymsByTfg(tfg: number) {
+export async function getAcronymsByTfg(
+  tfg: number
+): Promise<(string | number | null)[][]> {
   const client = await pool.connect();
   try {
     const result = await client.query(getAcronymsByTfgQuery, [tfg]);
@@ -47,25 +58,15 @@ export async function getAcronymsByTfg(tfg: number) {
   }
 }
 
-export async function getAcronymById(acronymId: number) {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(getAcronymByIdQuery, [acronymId]);
-    return result.rows[0];
-  } catch (error) {
-    console.error("Error fetching acronym by ID:", error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-export async function getAcronymByAcronymAndTfg(acronym: string, tfg: number) {
+export async function getAcronymByAcronymAndTfg(acronymId: {
+  acronym: string;
+  tfg: number;
+}): Promise<(string | number | null)[]> {
   const client = await pool.connect();
   try {
     const result = await client.query(getAcronymByAcronymAndTfgQuery, [
-      acronym,
-      tfg,
+      acronymId.acronym,
+      acronymId.tfg,
     ]);
     return result.rows[0];
   } catch (error) {
@@ -76,7 +77,31 @@ export async function getAcronymByAcronymAndTfg(acronym: string, tfg: number) {
   }
 }
 
-export async function deleteAcronym(acronymId: number) {
+export async function updateAcronym(
+  acronymId: { acronym: string; tfg: number },
+  data: Partial<{ acronym: string; meaning: string }>
+): Promise<(string | number | null)[]> {
+  const client = await pool.connect();
+  try {
+    const { acronym, meaning } = data;
+    const result = await client.query(updateAcronymQuery, [
+      acronym,
+      meaning,
+      acronymId.tfg,
+    ]);
+    return result.rows[0]; // Return the updated acronym
+  } catch (error) {
+    console.error("Error updating acronym:", error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function deleteAcronym(acronymId: {
+  acronym: string;
+  tfg: number;
+}): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query(deleteAcronymQuery, [acronymId]);

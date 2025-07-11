@@ -49,6 +49,10 @@ CREATE DOMAIN csl_namefile AS VARCHAR(64) CHECK (
   )
 );
 
+-- Valor por defecto para el dominio
+ALTER DOMAIN csl_namefile
+SET DEFAULT 'acm-sig-proceedings';
+
 -- =====================================================
 -- CREACIÓN DE TABLAS
 -- =====================================================

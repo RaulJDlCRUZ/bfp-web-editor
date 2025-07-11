@@ -11,7 +11,7 @@ export class User {
     public lastname2: string,
     public technology: string,
     public user_id?: number,
-    public phone?: number | null,
+    public phone?: number | null
   ) {
     if (!email) {
       throw new Error("Email is required");
@@ -44,9 +44,8 @@ export class User {
       row.user_id,
       row.phone || null // phone can be null
     );
-
   }
-  
+
   toArray(): (string | number | null)[] {
     const a = [
       this.user_id ? this.user_id : null,
@@ -59,9 +58,7 @@ export class User {
       this.phone ? this.phone : null,
     ];
     //!!!!! Asumimos que es una función para obtejer el array de la clase y despues insertarlo
-    this.insert = New InsertFromArrayRecordString(a);
+    // this.insert = New InsertFromArrayRecordString(a);
     return a;
   }
-
-  
 }

@@ -1,6 +1,6 @@
 {
   "name": "bfp-web-editor",
-  "version": "0.2.10",
+  "version": "0.3.0alpha",
   "main": "index.js",
   "keywords": [
     "bfp",
@@ -68,12 +68,14 @@
     "backend:build": "npx tsc -p src/server",
     "backend:start": "node dist/src/index.js",
     "backend:dev": "DEBUG=* NODE_ENV=development tsx watch src/server/src/index.ts",
+    "backend:dev2": "DEBUG=* NODE_ENV=development tsx watch server/src/server.ts",
     "backend:devdist": "DEBUG=* PORT=5000 NODE_ENV=development node --watch dist/src/index.js",
     "client:build": "vite build --config src/client/vite.config.ts",
     "client:dev": "vite --config src/client/vite.config.ts",
+    "client:dev2": "vite --config client/vite.config.ts",
     "client:preview": "vite preview --config src/client/vite.config.ts",
     "client:lint": "eslint src/client --ext .ts,.tsx",
-    "dev:all": "concurrently \"npm run backend:dev\" \"npm run client:dev\"",
+    "dev:all": "concurrently \"npm run backend:dev2\" \"npm run client:dev2\"",
     "build": "npm run backend:build && npm run client:build",
     "clean": "rm -rf dist",
     "start": "chmod +x ./fetchTemplate.sh && npm run build && npm run backend:start"
