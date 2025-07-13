@@ -8,7 +8,7 @@ import configRoutes from "./config.routes";
 import compileRoutes from "./compile.routes";
 import fileRoutes from "./files.routes";
 
-const app = Router();
+const app: Router = Router();
 
 app.use("/users", userRoutes);
 app.use("/config", configRoutes);

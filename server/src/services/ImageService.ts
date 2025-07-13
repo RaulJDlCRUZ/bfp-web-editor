@@ -37,6 +37,14 @@ export class ImageService extends BaseService<Image> {
     return await this.imageRepository.findById(id);
   }
 
+  async findByFilename(filename: string, tfg: number): Promise<Image | null> {
+    throw new Error("Method not implemented.");
+  }
+
+  async getAllImages(tfg: number): Promise<Image[]> {
+    return await this.imageRepository.findAll(tfg);
+  }
+
   async createNewImage(data: Partial<Image>): Promise<Image> {
     // if (!data.isComplete()) {
     //   throw new Error("Image data is incomplete (CHECK VALIDATION).");
@@ -49,9 +57,5 @@ export class ImageService extends BaseService<Image> {
 
     console.log(`New image created with file: ${data.filename}`);
     return response;
-  }
-
-  async getAllImages(tfg: number): Promise<Image[]> {
-    return await this.imageRepository.findAll(tfg);
   }
 }

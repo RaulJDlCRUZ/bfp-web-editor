@@ -111,6 +111,10 @@ export class TfgService extends BaseService<Tfg> {
     return this.tfgRepository.findById(id);
   }
 
+  async findByStudentId(studentId: number): Promise<Tfg> {
+    return this.tfgRepository.findByUserId(studentId);
+  }
+
   async updateTfg(id: number, data: Partial<TfgFormData>): Promise<Tfg> {
     try {
       // Validaciones QUE LAS MOVERÍA A CONTROLADOR

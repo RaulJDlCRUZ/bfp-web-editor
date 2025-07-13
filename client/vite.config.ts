@@ -12,17 +12,17 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "../../dist/public",
+    outDir: "../dist/public",
     emptyOutDir: true, // Clean the output directory before building
   },
   server: {
     watch: {
-      ignored: ['../../src/server/**'],
+      ignored: ['../server/**'],
     },
   },
   css: {
     postcss: {
-      plugins: [tailwindcss({config: path.resolve(__dirname, "./tailwind.config.js")})],
+      plugins: [tailwindcss({config: path.resolve(__dirname, "../tailwind.config.js")})],
       // plugins: [tailwindcss()],
     },
   },

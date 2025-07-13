@@ -1,4 +1,5 @@
 import { folderPath } from "../app";
+import { RequestHandler } from "express";
 import multer, { StorageEngine, diskStorage } from "multer";
 
 /**
@@ -18,7 +19,7 @@ const storage: StorageEngine = diskStorage({
   },
 });
 
-const upload = multer({
+const upload: RequestHandler = multer({
   storage: storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10 MB

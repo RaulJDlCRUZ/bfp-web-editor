@@ -306,5 +306,44 @@ export class UserTfgService {
     }
   }
 
-  async materializeFromUser() {}
+  async materializeFromUser(user_id: number) {
+    try {
+      // Fetch user object by user_id
+      const user: User | null = await this.userService.findById(user_id);
+      if (!user || !user.user_id) {
+        throw new Error(`User with ID ${user_id} not found.`);
+      }
+
+      // Find TFG by user ID
+      const tfg: Tfg = await this.tfgService.findByStudentId(user.user_id);
+      if (!tfg || !tfg.bfp_id) {
+        throw new Error(`TFG for user with ID ${user_id} not found.`);
+      }
+
+      // Find basic info
+      const basicInfo: BasicInfo | null =
+        await this.basicInfoService.getBasicInfoById(tfg.bfp_id);
+
+      if (!basicInfo || !basicInfo.bfp_id) {
+        throw new Error(`Basic info for TFG with ID ${tfg.bfp_id} not found.`);
+      }
+
+      // Find chapters
+      const chapters: Chapter[] = await this.chapterService.findAll(tfg.bfp_id);
+
+      // Fin appendices
+      const appendices: Appendix[] = await this.appendixService.findAll(
+        tfg.bfp_id
+      );
+
+      // Find acronyms
+      const acronyms: Acronym[] = await this.acronymService.findAll(tfg.bfp_id);
+
+      // Find images
+      const images: Image[] = await this.imageService.getAllImages(tfg.bfp_id);
+    } catch (error) {
+      console.error("Error materializing user and TFG data:", error);
+      throw error;
+    }
+  }
 }
