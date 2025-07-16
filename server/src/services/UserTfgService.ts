@@ -8,11 +8,6 @@ import {
 
 import { UserRepository } from "../models/repositories/UserRepository";
 import { TfgRepository } from "../models/repositories/TfgRepository";
-// import { AcronymRepository } from "../models/repositories/AcronymRepository";
-// import { AppendixRepository } from "../models/repositories/AppendixRepository";
-// import { BasicInfoRepository } from "../models/repositories/BasicInfoRepository";
-// import { ChapterRepository } from "../models/repositories/ChapterRepository";
-// import { ImageRepository } from "../models/repositories/ImageRepository";
 
 import { AcronymService } from "./AcronymService";
 import { AppendixService } from "./AppendixService";
@@ -91,7 +86,7 @@ export class UserTfgService {
       const resources: Record<string, any> =
         await this.imageService.readResources(resources_path);
       const config: Record<string, any> =
-        await this.basicInfoService.readSetupFiles(config_path); // call the same function to read config.yaml
+        await this.tfgService.readConfigFile(config_path);
       const bibliography: string = await this.basicInfoService.readBibFile(
         bib_path
       );
