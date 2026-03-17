@@ -1,8 +1,8 @@
 {
     "files": [],
     "references": [
-      { "path": "src/server" },
-      { "path": "src/client" }
+      { "path": "./server/" },
+      { "path": "./client/" }
     ],
     "compilerOptions": {
       "target": "ES2022",
@@ -13,6 +13,10 @@
       "esModuleInterop": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
-      "resolveJsonModule": true
+      "resolveJsonModule": true,
+      "baseUrl": "./",
+      "paths": {
+        "@db/*": ["server/db/*"]
+      }
     }
 }
