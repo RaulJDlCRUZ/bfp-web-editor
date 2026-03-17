@@ -1,0 +1,47 @@
+import { useState, JSX } from "react";
+import CompileButton from "@/views/components/common/CompileButton/CompileButton";
+
+const BACKEND_URI = import.meta.env.VITE_BACKEND_URI;
+
+function BasicCompilePage(): JSX.Element {
+  const [documentData, setDocumentData] = useState<string | null>(null);
+
+  return (
+    <div className="flex flex-col items-center justify-start pt-10">
+      <div className="text-center">
+        <h1 className="text-6xl text-gray-700 font-bold">
+          TFG Web Editor (Demo)
+        </h1>
+        <p className="text-gray-500 text-2xl mt-4">
+          A simple web compiler for TFG documents
+        </p>
+        <p className="text-gray-400 text-lg mt-4">
+          Click the button below to compile the document
+        </p>
+        <div className="mt-6">
+          <CompileButton setDocumentData={setDocumentData} />
+        </div>
+      </div>
+      {documentData && (
+        <div className="mt-8 flex justify-center w-5/6">
+          <object
+            data={`${BACKEND_URI}/result`}
+            type="application/pdf"
+            width="100%"
+            height="600px"
+          >
+            <p>
+              Your browser does not support PDFs.{" "}
+              <a href={`${BACKEND_URI}/result`}>
+                <u>Download the PDF</u>
+              </a>
+              .
+            </p>
+          </object>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default BasicCompilePage;
